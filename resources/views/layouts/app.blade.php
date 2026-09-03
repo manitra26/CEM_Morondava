@@ -100,6 +100,7 @@
         .reaction-summary { background: rgba(28,124,108,.12); color: var(--cem-green); border: 1px solid rgba(28,124,108,.2); }
         .reaction-selected { background: rgba(216,124,77,.2); border-color: var(--cem-accent); }
         .cem-reply-quote { border-left: 3px solid var(--cem-accent); padding: .5rem .75rem; background: rgba(216,124,77,.08); color: rgba(23,52,59,.75); border-radius: .35rem; }
+        .cem-group-avatar { width: 4rem; height: 4rem; flex: 0 0 4rem; }
     </style>
 </head>
 <body>

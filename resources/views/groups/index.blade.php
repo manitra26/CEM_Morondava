@@ -10,7 +10,7 @@
                 <strong>Créer un groupe</strong>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('groups.store') }}">
+                <form method="POST" action="{{ route('groups.store') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Nom du groupe</label>
@@ -19,6 +19,11 @@
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <textarea name="description" rows="6" class="form-control" required>{{ old('description') }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Image du groupe</label>
+                        <input type="file" name="group_image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+                        <div class="form-text">JPG, PNG ou WEBP, 5 Mo maximum.</div>
                     </div>
                     <button type="submit" class="btn btn-cem w-100">Créer le groupe</button>
                 </form>
@@ -56,7 +61,14 @@
                     <div class="border rounded-4 p-3 mb-3 bg-white">
                         <div class="d-flex justify-content-between flex-wrap gap-3">
                             <div>
-                                <h5 class="mb-1">{{ $group->name }}</h5>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if($group->image_path)
+                                        <img src="{{ route('groups.image', $group) }}" alt="Image du groupe" class="cem-avatar cem-group-avatar">
+                                    @else
+                                        <span class="cem-avatar cem-group-avatar cem-avatar-placeholder">{{ strtoupper(substr($group->name, 0, 1)) }}</span>
+                                    @endif
+                                    <h5 class="mb-1">{{ $group->name }}</h5>
+                                </div>
                                 <div class="small cem-soft">Créé par {{ $group->creator->name }} - {{ $group->members->count() }} membre(s)</div>
                             </div>
                             <div class="d-flex gap-2 flex-wrap">

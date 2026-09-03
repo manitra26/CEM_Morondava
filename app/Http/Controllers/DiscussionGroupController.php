@@ -35,11 +35,13 @@ class DiscussionGroupController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
+            'group_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $group = DiscussionGroup::create([
             'name' => $data['name'],
             'description' => $data['description'],
+            'image_path' => $request->file('group_image')?->store('groups'),
             'created_by' => $request->user()->id,
         ]);
 
