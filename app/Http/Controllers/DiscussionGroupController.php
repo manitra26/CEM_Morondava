@@ -6,7 +6,10 @@ use App\Models\DiscussionGroup;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DiscussionGroupController extends Controller
 {
@@ -56,15 +59,48 @@ class DiscussionGroupController extends Controller
             'creator',
             'members' => fn ($query) => $query->orderBy('name'),
             'messages.user',
+            'messages.replyTo.user',
+            'messages.reactions',
         ]);
 
         $allUsers = User::orderBy('name')->get();
 
         return view('groups.show', [
             'group' => $group,
+            'messages' => $group->messages->sortBy('created_at')->values(),
             'allUsers' => $allUsers,
             'isDirector' => $canManage,
         ]);
+    }
+
+    public function update(Request $request, DiscussionGroup $group): RedirectResponse
+    {
+        $this->ensureCanManage($group);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:1000'],
+            'group_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        if ($request->hasFile('group_image')) {
+            if ($group->image_path) {
+                Storage::delete($group->image_path);
+            }
+            $data['image_path'] = $request->file('group_image')->store('groups');
+        }
+
+        unset($data['group_image']);
+        $group->update($data);
+
+        return back()->with('success', 'Les paramètres du groupe ont été mis à jour.');
+    }
+
+    public function image(DiscussionGroup $group): Response|StreamedResponse
+    {
+        abort_unless($group->image_path && Storage::exists($group->image_path), 404);
+
+        return Storage::response($group->image_path);
     }
 
     public function join(DiscussionGroup $group): RedirectResponse

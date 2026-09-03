@@ -70,13 +70,13 @@
                         <div class="d-flex justify-content-between gap-3">
                             <div>
                                 <h5 class="mb-1">{{ $report->title }}</h5>
-                                <div class="small cem-soft">Par {{ $report->user->name }} le {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
+                                <div class="small cem-soft">Par <a href="{{ route('profile.show', $report->user) }}">{{ $report->user->name }}</a> le {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
                             </div>
                             @if($report->attachment_path)
                                 <a href="{{ route('reports.download', $report) }}" class="btn btn-outline-secondary btn-sm">Pièce jointe</a>
                             @endif
                         </div>
-                        <p class="mt-2 mb-0">{{ IlluminateSupportStr::limit($report->content, 180) }}</p>
+                        <p class="mt-2 mb-0">{{ \Illuminate\Support\Str::limit($report->content, 180) }}</p>
                     </div>
                 @empty
                     <div class="text-center cem-soft py-4">Aucun rapport pour le moment.</div>

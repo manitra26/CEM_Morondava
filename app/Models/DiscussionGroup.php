@@ -12,6 +12,7 @@ class DiscussionGroup extends Model
     protected $fillable = [
         'name',
         'description',
+        'image_path',
         'created_by',
     ];
 

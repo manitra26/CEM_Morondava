@@ -23,7 +23,7 @@
                     <div class="mb-3">
                         <label class="form-label">Fichier joint</label>
                         <input type="file" name="attachment" class="form-control">
-                        <div class="form-text">PDF, image ou document jusqu'à 10 Mo.</div>
+                        <div class="form-text">PDF, Excel, Word, PowerPoint, image, texte ou ZIP jusqu'à 20 Mo.</div>
                     </div>
                     <button type="submit" class="btn btn-cem w-100">Envoyer le rapport</button>
                 </form>
@@ -43,7 +43,14 @@
                         <div class="d-flex justify-content-between gap-3 flex-wrap">
                             <div>
                                 <h5 class="mb-1">{{ $report->title }}</h5>
-                                <div class="small cem-soft">Par {{ $report->user->name }} - {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    @if($report->user->avatar_path)
+                                        <img src="{{ route('profile.avatar', $report->user) }}" alt="Photo de {{ $report->user->name }}" class="cem-avatar cem-member-avatar">
+                                    @else
+                                        <span class="cem-avatar cem-member-avatar cem-avatar-placeholder">{{ strtoupper(substr($report->user->name, 0, 1)) }}</span>
+                                    @endif
+                                    <div><div class="small">Par <a href="{{ route('profile.show', $report->user) }}" class="text-decoration-none fw-semibold">{{ $report->user->name }}</a></div><div class="cem-user-meta text-capitalize">{{ $report->user->role }}{{ $report->user->position ? ' - '.$report->user->position : '' }}</div><div class="small cem-soft">{{ $report->submitted_at?->format('d/m/Y H:i') }}</div></div>
+                                </div>
                             </div>
                             <div class="d-flex gap-2 flex-wrap">
                                 @if($report->attachment_path)

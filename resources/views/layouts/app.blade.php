@@ -72,6 +72,34 @@
             background: linear-gradient(135deg, #165e54, #124841);
             color: white;
         }
+
+        .cem-avatar { width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; }
+        .cem-avatar-lg { width: 7rem; height: 7rem; border: .35rem solid white; box-shadow: 0 8px 20px rgba(0,0,0,.15); }
+        .cem-avatar-placeholder { display: grid; place-items: center; background: linear-gradient(135deg, #1c7c6c, #d87c4d); color: white; font-size: 2.5rem; font-weight: 700; }
+        .cem-profile-cover { height: 9rem; background: linear-gradient(135deg, #10363a, #1c7c6c 55%, #d87c4d); }
+        .cem-info-box { display: flex; flex-direction: column; gap: .25rem; padding: 1rem; border-radius: 1rem; background: rgba(28,124,108,.07); }
+        .cem-info-box span { color: rgba(23,52,59,.65); font-size: .85rem; }
+        .typing-dots { display: inline-flex; gap: .2rem; align-items: center; }
+        .typing-dots i { width: .35rem; height: .35rem; border-radius: 50%; background: currentColor; animation: cem-bounce 1s infinite ease-in-out; }
+        .typing-dots i:nth-child(2) { animation-delay: .15s; }
+        .typing-dots i:nth-child(3) { animation-delay: .3s; }
+        @keyframes cem-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-.25rem); opacity: 1; } }
+        html.theme-dark body { background: #142427; color: #edf7f3; }
+        html.theme-dark .cem-card, html.theme-dark .bg-white { background: #203337 !important; color: #edf7f3; }
+        html.theme-dark .cem-soft, html.theme-dark .cem-info-box span { color: rgba(237,247,243,.68); }
+        html.theme-dark .form-control, html.theme-dark .form-select { background: #172a2d; border-color: #476165; color: #edf7f3; }
+        html.theme-dark .list-group-item { background: transparent; color: #edf7f3; border-color: rgba(237,247,243,.12); }
+        html.theme-dark .cem-info-box { background: rgba(255,255,255,.08); }
+        html.theme-dark .btn-outline-secondary { color: #edf7f3; border-color: #9ab0ad; }
+        .cem-avatar-nav { width: 2.75rem; height: 2.75rem; border: 2px solid rgba(255,255,255,.8); font-size: 1.1rem; }
+        .cem-avatar-message { width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; }
+        .cem-member-avatar { width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; }
+        .cem-user-meta { font-size: .8rem; color: rgba(23,52,59,.62); }
+        .reaction-picker form { display: inline-block; }
+        .reaction-button { border-radius: 999px !important; min-width: 2.25rem; }
+        .reaction-summary { background: rgba(28,124,108,.12); color: var(--cem-green); border: 1px solid rgba(28,124,108,.2); }
+        .reaction-selected { background: rgba(216,124,77,.2); border-color: var(--cem-accent); }
+        .cem-reply-quote { border-left: 3px solid var(--cem-accent); padding: .5rem .75rem; background: rgba(216,124,77,.08); color: rgba(23,52,59,.75); border-radius: .35rem; }
     </style>
 </head>
 <body>
@@ -92,9 +120,14 @@
                 @endif
             </ul>
             <div class="d-flex align-items-center gap-3">
+                @if(auth()->user()->avatar_path)
+                    <img src="{{ route('profile.avatar', auth()->user()) }}" alt="Photo de profil" class="cem-avatar cem-avatar-nav">
+                @else
+                    <span class="cem-avatar cem-avatar-nav cem-avatar-placeholder">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                @endif
                 <span class="navbar-text small text-end">
-                    <strong>{{ auth()->user()->name }}</strong><br>
-                    <span class="opacity-75 text-capitalize">{{ auth()->user()->role }}</span>
+                    <a href="{{ route('profile.show', auth()->user()) }}" class="text-white text-decoration-none"><strong>{{ auth()->user()->name }}</strong></a><br>
+                    <span class="opacity-75 text-capitalize">{{ auth()->user()->role }}</span><br><a href="{{ route('profile.edit') }}" class="small text-white">Profil et paramètres</a>
                 </span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -125,5 +158,14 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@stack('scripts')
+<script>
+    (() => {
+        const preference = @json(auth()->user()->theme ?? 'system');
+        const dark = preference === 'dark' || (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('theme-dark', dark);
+    })();
+</script>
+
 </body>
 </html>
