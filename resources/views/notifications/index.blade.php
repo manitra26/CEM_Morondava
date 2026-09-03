@@ -15,6 +15,16 @@
         @forelse ($notifications as $notification)
             <div class="border rounded-4 p-3 mb-3 bg-white d-flex justify-content-between gap-3 flex-wrap">
                 <div>
+                    @if($notification->actor)
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            @if($notification->actor->avatar_path)
+                                <img src="{{ route('profile.avatar', $notification->actor) }}" alt="Photo de {{ $notification->actor->name }}" class="cem-avatar cem-member-avatar">
+                            @else
+                                <span class="cem-avatar cem-member-avatar cem-avatar-placeholder">{{ strtoupper(substr($notification->actor->name, 0, 1)) }}</span>
+                            @endif
+                            <div><a href="{{ route('profile.show', $notification->actor) }}" class="text-decoration-none fw-semibold">{{ $notification->actor->name }}</a><div class="cem-user-meta text-capitalize">{{ $notification->actor->role }}{{ $notification->actor->position ? ' - '.$notification->actor->position : '' }}</div></div>
+                        </div>
+                    @endif
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <h5 class="mb-0">{{ $notification->title }}</h5>
                         @if(! $notification->is_read)

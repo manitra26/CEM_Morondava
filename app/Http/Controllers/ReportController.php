@@ -30,7 +30,13 @@ class ReportController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'attachment' => ['nullable', 'file', 'max:10240'],
+            'attachment' => [
+                'nullable',
+                'file',
+                'mimes:pdf,doc,docx,xls,xlsx,csv,ppt,pptx,txt,jpg,jpeg,png,gif,webp,zip',
+                'extensions:pdf,doc,docx,xls,xlsx,csv,ppt,pptx,txt,jpg,jpeg,png,gif,webp,zip',
+                'max:20480',
+            ],
         ]);
 
         $attachmentPath = null;
@@ -50,6 +56,7 @@ class ReportController extends Controller
         foreach ($directors as $director) {
             InternalNotification::create([
                 'user_id' => $director->id,
+                'actor_id' => $request->user()->id,
                 'title' => 'Nouveau rapport journalier',
                 'content' => sprintf('%s a envoyé le rapport "%s".', $request->user()->name, $report->title),
                 'type' => 'report',
