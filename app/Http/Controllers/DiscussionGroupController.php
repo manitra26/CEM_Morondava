@@ -62,7 +62,7 @@ class DiscussionGroupController extends Controller
             'members' => fn ($query) => $query->orderBy('name'),
             'messages.user',
             'messages.replyTo.user',
-            'messages.reactions',
+            'messages.reactions.user',
         ]);
 
         $allUsers = User::orderBy('name')->get();
