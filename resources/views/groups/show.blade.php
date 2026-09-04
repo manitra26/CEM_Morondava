@@ -70,8 +70,9 @@
                             <div class="cem-reply-quote mt-3"><strong>{{ $message->replyTo->user->name }}</strong><br>{{ \Illuminate\Support\Str::limit($message->replyTo->content, 120) }}</div>
                         @endif
                         <p class="mt-3 mb-2">{{ $message->content }}</p>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <div class="btn-group btn-group-sm reaction-picker" role="group">
+                        <div class="d-flex align-items-center gap-2 flex-wrap reaction-actions position-relative">
+                            <button type="button" class="btn btn-light btn-sm reaction-trigger" data-reaction-target="reaction-picker-{{ $message->id }}" title="Ajouter une réaction">😊</button>
+                            <div id="reaction-picker-{{ $message->id }}" class="btn-group btn-group-sm reaction-picker d-none" role="group">
                                 @foreach(['👍', '❤️', '😂', '😮', '😢', '🙏'] as $reaction)
                                     <form method="POST" action="{{ route('messages.react', $message) }}">
                                         @csrf
@@ -81,7 +82,21 @@
                             </div>
                             <button type="button" class="btn btn-outline-secondary btn-sm reply-message" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->user->name }}" data-reply-content="{{ $message->content }}">Répondre</button>
                             @foreach($message->reactions->groupBy('reaction') as $reaction => $items)
-                                <span class="badge reaction-summary {{ $items->contains('user_id', auth()->id()) ? 'reaction-selected' : '' }}">{{ $reaction }} {{ $items->count() }}</span>
+                                <button type="button" class="badge reaction-summary reaction-details-trigger {{ $items->contains('user_id', auth()->id()) ? 'reaction-selected' : '' }}" data-reaction-target="reaction-details-{{ $message->id }}-{{ md5($reaction) }}">{{ $reaction }} {{ $items->count() }}</button>
+                                <div id="reaction-details-{{ $message->id }}-{{ md5($reaction) }}" class="reaction-details-popover d-none">
+                                    <strong>{{ $items->count() }} réaction(s)</strong>
+                                    @foreach($items as $reactionItem)
+                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                            @if($reactionItem->user->avatar_path)
+                                                <img src="{{ route('profile.avatar', $reactionItem->user) }}" alt="Photo de {{ $reactionItem->user->name }}" class="cem-avatar cem-member-avatar">
+                                            @else
+                                                <span class="cem-avatar cem-member-avatar cem-avatar-placeholder">{{ strtoupper(substr($reactionItem->user->name, 0, 1)) }}</span>
+                                            @endif
+                                            <div><a href="{{ route('profile.show', $reactionItem->user) }}" class="text-decoration-none fw-semibold">{{ $reactionItem->user->name }}</a><div class="cem-user-meta text-capitalize">{{ $reactionItem->user->role }}{{ $reactionItem->user->position ? ' - '.$reactionItem->user->position : '' }}</div></div>
+                                            <span class="ms-auto">{{ $reaction }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @endforeach
                         </div>
                     </div>
@@ -216,9 +231,16 @@
             quote.textContent = message.reply_to.user_name + ': ' + message.reply_to.content;
         }
         const actions = document.createElement('div');
-        actions.className = 'd-flex align-items-center gap-2 flex-wrap mt-2';
+        actions.className = 'd-flex align-items-center gap-2 flex-wrap mt-2 reaction-actions position-relative';
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'btn btn-light btn-sm reaction-trigger';
+        trigger.dataset.reactionTarget = 'reaction-picker-' + message.id;
+        trigger.title = 'Ajouter une réaction';
+        trigger.textContent = '😊';
         const picker = document.createElement('div');
-        picker.className = 'btn-group btn-group-sm reaction-picker';
+        picker.id = 'reaction-picker-' + message.id;
+        picker.className = 'btn-group btn-group-sm reaction-picker d-none';
         ['👍', '❤️', '😂', '😮', '😢', '🙏'].forEach((reaction) => {
             const reactionForm = document.createElement('form');
             reactionForm.method = 'POST';
@@ -243,7 +265,43 @@
         replyButton.dataset.replyUser = message.user.name;
         replyButton.dataset.replyContent = message.content;
         replyButton.textContent = 'Répondre';
-        actions.append(picker, replyButton);
+        actions.append(trigger, picker, replyButton);
+        Object.entries(message.reactions || {}).forEach(([reaction, reactionData]) => {
+            const summary = document.createElement('button');
+            summary.type = 'button';
+            summary.className = 'badge reaction-summary reaction-details-trigger' + (reactionData.reacted ? ' reaction-selected' : '');
+            summary.textContent = reaction + ' ' + reactionData.count;
+            const detail = document.createElement('div');
+            detail.className = 'reaction-details-popover d-none';
+            detail.id = 'reaction-details-' + message.id + '-' + reaction.codePointAt(0);
+            const title = document.createElement('strong');
+            title.textContent = reactionData.count + ' réaction(s)';
+            detail.append(title);
+            reactionData.users.forEach((reactor) => {
+                const row = document.createElement('div');
+                row.className = 'd-flex align-items-center gap-2 mt-2';
+                const avatar = document.createElement(reactor.avatar_url ? 'img' : 'div');
+                avatar.className = 'cem-avatar cem-member-avatar' + (reactor.avatar_url ? '' : ' cem-avatar-placeholder');
+                if (reactor.avatar_url) { avatar.src = reactor.avatar_url; avatar.alt = 'Photo de ' + reactor.name; } else { avatar.textContent = reactor.name.charAt(0).toUpperCase(); }
+                const info = document.createElement('div');
+                const name = document.createElement('a');
+                name.href = '/profile/' + reactor.id;
+                name.className = 'text-decoration-none fw-semibold';
+                name.textContent = reactor.name;
+                const meta = document.createElement('div');
+                meta.className = 'cem-user-meta text-capitalize';
+                meta.textContent = reactor.role + (reactor.position ? ' - ' + reactor.position : '');
+                info.append(name, meta);
+                const icon = document.createElement('span');
+                icon.className = 'ms-auto';
+                icon.textContent = reaction;
+                row.append(avatar, info, icon);
+                detail.append(row);
+            });
+            summary.dataset.reactionTarget = detail.id;
+            actions.append(summary, detail);
+        });
+
         item.append(header, quote, body, actions);
         chat.append(item);
     });
@@ -295,6 +353,20 @@
     cancel.addEventListener('click', () => {
         replyId.value = '';
         replyPreview.classList.add('d-none');
+    });
+})();
+</script>
+<script>
+(() => {
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('.reaction-trigger, .reaction-details-trigger');
+        document.querySelectorAll('.reaction-picker, .reaction-details-popover').forEach((popup) => {
+            if (!trigger || popup.id !== trigger.dataset.reactionTarget) popup.classList.add('d-none');
+        });
+        if (trigger) {
+            document.getElementById(trigger.dataset.reactionTarget)?.classList.toggle('d-none');
+            event.stopPropagation();
+        }
     });
 })();
 </script>

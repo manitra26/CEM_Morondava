@@ -100,6 +100,14 @@
         .reaction-summary { background: rgba(28,124,108,.12); color: var(--cem-green); border: 1px solid rgba(28,124,108,.2); }
         .reaction-selected { background: rgba(216,124,77,.2); border-color: var(--cem-accent); }
         .cem-reply-quote { border-left: 3px solid var(--cem-accent); padding: .5rem .75rem; background: rgba(216,124,77,.08); color: rgba(23,52,59,.75); border-radius: .35rem; }
+        .cem-group-avatar { width: 4rem; height: 4rem; flex: 0 0 4rem; }
+        .reaction-actions { min-height: 2.4rem; }
+        .reaction-picker { position: absolute; z-index: 10; bottom: calc(100% + .45rem); left: 0; padding: .3rem; border-radius: 999px; background: white; box-shadow: 0 8px 25px rgba(23,52,59,.18); }
+        .reaction-picker .reaction-button { border-radius: 999px !important; font-size: 1.25rem; min-width: 2.5rem; }
+        html.theme-dark .reaction-picker { background: #203337; }
+        .reaction-details-popover { position: absolute; z-index: 20; bottom: calc(100% + .45rem); left: 0; min-width: 18rem; max-width: 24rem; padding: .9rem; border-radius: 1rem; background: white; box-shadow: 0 10px 30px rgba(23,52,59,.22); }
+        .reaction-details-trigger { border: 1px solid rgba(28,124,108,.2); cursor: pointer; }
+        html.theme-dark .reaction-details-popover { background: #203337; color: #edf7f3; }
     </style>
 </head>
 <body>

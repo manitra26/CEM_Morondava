@@ -20,7 +20,7 @@ class MessageController extends Controller
         $this->ensureMember($request, $group);
 
         $messages = $group->messages()
-            ->with(['user:id,name,role,position,avatar_path', 'replyTo.user:id,name', 'reactions'])
+            ->with(['user:id,name,role,position,avatar_path', 'replyTo.user:id,name', 'reactions.user:id,name,role,position,avatar_path'])
             ->latest('id')
             ->limit(100)
             ->get()
@@ -46,6 +46,13 @@ class MessageController extends Controller
                 'reactions' => $message->reactions->groupBy('reaction')->map(fn ($items): array => [
                     'count' => $items->count(),
                     'reacted' => $items->contains('user_id', $request->user()->id),
+                    'users' => $items->map(fn (MessageReaction $reaction): array => [
+                        'id' => $reaction->user->id,
+                        'name' => $reaction->user->name,
+                        'role' => $reaction->user->role,
+                        'position' => $reaction->user->position,
+                        'avatar_url' => $reaction->user->avatar_path ? route('profile.avatar', $reaction->user) : null,
+                    ])->values(),
                 ]),
             ]);
 
