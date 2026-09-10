@@ -167,6 +167,7 @@
                 <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Tableau de bord</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('reports.index') }}">Rapports</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('groups.index') }}">Discussions</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('private.messages.index') }}">Messages</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('notifications.index') }}">Notifications</a></li>
                 @if(auth()->user()->isDirector())
                     <li class="nav-item"><a class="nav-link" href="{{ route('users.index') }}">Utilisateurs</a></li>

@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscussionGroupController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PrivateMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
@@ -30,6 +31,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/settings', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/{user}/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+
+    Route::get('/messages/{user?}', [PrivateMessageController::class, 'index'])->name('private.messages.index');
+    Route::get('/messages/{user}/conversation', [PrivateMessageController::class, 'index'])->name('private.messages.user');
+    Route::post('/messages/{user}', [PrivateMessageController::class, 'store'])->name('private.messages.store');
+    Route::post('/private-messages/{privateMessage}/reactions', [PrivateMessageController::class, 'react'])->name('private.messages.react');
+    Route::delete('/private-messages/{privateMessage}', [PrivateMessageController::class, 'destroy'])->name('private.messages.destroy');
+    Route::get('/private-messages/{privateMessage}/file', [PrivateMessageController::class, 'file'])->name('private.messages.file');
+    Route::get('/private-messages/{privateMessage}/download', [PrivateMessageController::class, 'download'])->name('private.messages.download');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
