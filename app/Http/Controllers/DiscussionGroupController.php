@@ -13,13 +13,22 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DiscussionGroupController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = auth()->user();
         $isDirector = $user->role === 'directeur';
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
 
         $groups = DiscussionGroup::with(['creator', 'members'])
             ->when(! $isDirector, fn ($query) => $query->whereHas('members', fn ($memberQuery) => $memberQuery->where('users.id', $user->id)))
+            ->when($filters['search'] ?? null, function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('description', 'like', '%'.$search.'%');
+                });
+            })
             ->latest()
             ->get();
 
@@ -27,11 +36,13 @@ class DiscussionGroupController extends Controller
             ? User::orderBy('name')->get()
             : collect();
 
-        return view('groups.index', compact('groups', 'allUsers', 'isDirector'));
+        return view('groups.index', compact('groups', 'allUsers', 'isDirector', 'filters'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        abort_unless($request->user()->role === 'directeur', 403);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
@@ -66,12 +77,15 @@ class DiscussionGroupController extends Controller
         ]);
 
         $allUsers = User::orderBy('name')->get();
+        $canPost = $canManage || $group->posting_mode === 'all'
+            || (bool) ($group->members->firstWhere('id', $user->id)?->pivot?->can_post ?? false);
 
         return view('groups.show', [
             'group' => $group,
             'messages' => $group->messages->sortBy('created_at')->values(),
             'allUsers' => $allUsers,
             'isDirector' => $canManage,
+            'canPost' => $canPost,
         ]);
     }
 
@@ -82,6 +96,7 @@ class DiscussionGroupController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:1000'],
+            'posting_mode' => ['required', 'in:restricted,all'],
             'group_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
@@ -127,15 +142,20 @@ class DiscussionGroupController extends Controller
 
         $data = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
-            'action' => ['required', 'in:add,remove'],
+            'action' => ['required', 'in:add,remove,allow,deny'],
         ]);
 
         if ($data['action'] === 'add') {
             $group->members()->syncWithoutDetaching([
-                $data['user_id'] => ['joined_at' => now()],
+                $data['user_id'] => ['joined_at' => now(), 'can_post' => false],
             ]);
-        } else {
+        } elseif ($data['action'] === 'remove') {
             $group->members()->detach($data['user_id']);
+        } else {
+            abort_unless($group->members()->whereKey($data['user_id'])->exists(), 422);
+            $group->members()->updateExistingPivot($data['user_id'], [
+                'can_post' => $data['action'] === 'allow',
+            ]);
         }
 
         return back()->with('success', 'La liste des membres a été mise à jour.');

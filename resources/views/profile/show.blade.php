@@ -27,7 +27,10 @@
                     <div class="col-md-6"><div class="cem-info-box"><span>Téléphone</span><strong>{{ $user->phone ?: 'Non renseigné' }}</strong></div></div>
                     <div class="col-md-6"><div class="cem-info-box"><span>Email</span><strong>{{ $user->email }}</strong></div></div>
                 </div>
-                @if(auth()->id() === $user->id)<a href="{{ route('profile.edit') }}" class="btn btn-cem mt-4">Modifier mon profil</a>@endif
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    @if(auth()->id() !== $user->id)<a href="{{ route('private.messages.user', $user) }}" class="btn btn-cem">Message</a>@endif
+                    @if(auth()->id() === $user->id)<a href="{{ route('profile.edit') }}" class="btn btn-cem">Modifier mon profil</a>@endif
+                </div>
             </div>
         </div>
     </div>

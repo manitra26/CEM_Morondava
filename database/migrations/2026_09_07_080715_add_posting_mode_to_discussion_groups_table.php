@@ -1,0 +1,22 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('discussion_groups', function (Blueprint $table): void {
+            $table->string('posting_mode')->default('restricted')->after('description');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('discussion_groups', function (Blueprint $table): void {
+            $table->dropColumn('posting_mode');
+        });
+    }
+};
