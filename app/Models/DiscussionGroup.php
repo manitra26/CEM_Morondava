@@ -12,6 +12,7 @@ class DiscussionGroup extends Model
     protected $fillable = [
         'name',
         'description',
+        'posting_mode',
         'image_path',
         'created_by',
     ];
@@ -24,7 +25,7 @@ class DiscussionGroup extends Model
     public function members()
     {
         return $this->belongsToMany(User::class, 'discussion_group_user')
-            ->withPivot('joined_at');
+            ->withPivot('joined_at', 'can_post');
     }
 
     public function messages()

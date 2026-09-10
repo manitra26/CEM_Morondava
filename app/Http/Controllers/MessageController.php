@@ -62,6 +62,7 @@ class MessageController extends Controller
     public function typing(Request $request, DiscussionGroup $group): JsonResponse
     {
         $this->ensureMember($request, $group);
+        $this->ensureCanPost($request, $group);
 
         Cache::put($this->typingKey($group->id, $request->user()->id), [
             'user_id' => $request->user()->id,
@@ -86,6 +87,7 @@ class MessageController extends Controller
     public function store(Request $request, DiscussionGroup $group): RedirectResponse
     {
         $this->ensureMember($request, $group);
+        $this->ensureCanPost($request, $group);
 
         $data = $request->validate([
             'content' => ['required', 'string', 'max:4000'],
@@ -174,6 +176,17 @@ class MessageController extends Controller
     private function ensureMessageMember(Request $request, Message $message): void
     {
         $this->ensureMember($request, $message->discussionGroup);
+    }
+
+    private function ensureCanPost(Request $request, DiscussionGroup $group): void
+    {
+        $user = $request->user();
+        $canPost = $user->role === 'directeur'
+            || $group->created_by === $user->id
+            || $group->posting_mode === 'all'
+            || $group->members()->where('users.id', $user->id)->wherePivot('can_post', true)->exists();
+
+        abort_unless($canPost, 403, 'Ce groupe est en lecture seule pour votre compte.');
     }
 
     private function typingKey(int $groupId, int $userId): string

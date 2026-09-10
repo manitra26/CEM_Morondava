@@ -101,6 +101,51 @@
         .reaction-selected { background: rgba(216,124,77,.2); border-color: var(--cem-accent); }
         .cem-reply-quote { border-left: 3px solid var(--cem-accent); padding: .5rem .75rem; background: rgba(216,124,77,.08); color: rgba(23,52,59,.75); border-radius: .35rem; }
         .cem-group-avatar { width: 4rem; height: 4rem; flex: 0 0 4rem; }
+        .groups-page { min-height: calc(100vh - 8rem); }
+        .groups-list-card { display: flex; flex-direction: column; max-height: calc(100vh - 11rem); }
+        .groups-list-card .card-header { flex: 0 0 auto; }
+        .groups-list-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+        .group-list-item:last-child { margin-bottom: 0 !important; }
+        .groups-members-scroll { max-height: 28vh; overflow-y: auto; scrollbar-width: thin; }
+        .group-chat-card { height: calc(100vh - 17rem); min-height: 28rem; }
+        .group-chat-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+        #group-info-modal .modal-dialog { width: calc(100% - 2rem); max-width: 75rem; height: calc(100vh - 2rem); margin-left: auto; margin-right: auto; }
+        #group-info-modal .modal-content { height: 100%; }
+        .group-info-body { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .group-info-panel { animation: cem-panel-in .18s ease-out; }
+        .group-member-list { min-height: 0; flex: 1 1 auto; overflow-y: auto; scrollbar-width: thin; padding-right: .25rem; }
+        #group-manage-members-panel:not(.d-none) { display: flex !important; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+        #group-members-panel:not(.d-none) { display: flex !important; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+        .group-members-grid { min-height: 0; flex: 1 1 auto; overflow-y: auto; scrollbar-width: thin; }
+        .member-search-box { position: relative; width: 100%; max-width: 50rem; margin-inline: auto; }
+        .member-search-box .form-control { padding-left: 1rem; padding-right: 2.5rem; border: 2px solid rgba(28,124,108,.3); border-radius: 999px; box-shadow: 0 5px 16px rgba(23,52,59,.06); }
+        .member-search-box .form-control:focus { border-color: var(--cem-green); box-shadow: 0 0 0 .2rem rgba(28,124,108,.14); }
+        .member-search-clear { position: absolute; z-index: 2; right: .65rem; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--cem-soft); font-size: 1.35rem; line-height: 1; }
+        .member-search-clear:hover { color: var(--cem-ink); }
+        @keyframes cem-panel-in { from { opacity: .3; transform: translateY(.25rem); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 991.98px) {
+            #group-info-modal .modal-dialog { height: calc(100vh - 1rem); margin: .5rem; }
+            .group-chat-card { height: auto; min-height: 0; }
+            .group-chat-scroll { max-height: 68vh; }
+            .group-info-body { min-height: 0; }
+        }
+        @media (min-width: 992px) {
+            .groups-page { display: grid; grid-template-columns: minmax(0, 1fr); }
+            .groups-members-card { max-width: 32rem; }
+        }
+        @media (max-width: 991.98px) {
+            .groups-list-card { max-height: none; }
+            .groups-list-scroll { max-height: 62vh; }
+        }
+        .reports-page { min-height: calc(100vh - 8rem); }
+        .reports-history-card { display: flex; flex-direction: column; max-height: calc(100vh - 11rem); }
+        .reports-history-card .card-header { flex: 0 0 auto; }
+        .reports-history-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+        .report-history-item:last-child { margin-bottom: 0 !important; }
+        @media (max-width: 991.98px) {
+            .reports-history-card { max-height: none; }
+            .reports-history-scroll { max-height: 62vh; }
+        }
         .reaction-actions { min-height: 2.4rem; }
         .reaction-picker { position: absolute; z-index: 10; bottom: calc(100% + .45rem); left: 0; padding: .3rem; border-radius: 999px; background: white; box-shadow: 0 8px 25px rgba(23,52,59,.18); }
         .reaction-picker .reaction-button { border-radius: 999px !important; font-size: 1.25rem; min-width: 2.5rem; }
