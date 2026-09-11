@@ -116,7 +116,7 @@
         .group-member-list { min-height: 0; flex: 1 1 auto; overflow-y: auto; scrollbar-width: thin; padding-right: .25rem; }
         #group-manage-members-panel:not(.d-none) { display: flex !important; flex-direction: column; min-height: 0; flex: 1 1 auto; }
         #group-members-panel:not(.d-none) { display: flex !important; flex-direction: column; min-height: 0; flex: 1 1 auto; }
-        .group-members-grid { min-height: 0; flex: 1 1 auto; overflow-y: auto; scrollbar-width: thin; }
+        .group-members-grid { min-height: 0; flex: 1 1 auto; align-content: flex-start; overflow-y: auto; scrollbar-width: thin; }
         .member-search-box { position: relative; width: 100%; max-width: 50rem; margin-inline: auto; }
         .member-search-box .form-control { padding-left: 1rem; padding-right: 2.5rem; border: 2px solid rgba(28,124,108,.3); border-radius: 999px; box-shadow: 0 5px 16px rgba(23,52,59,.06); }
         .member-search-box .form-control:focus { border-color: var(--cem-green); box-shadow: 0 0 0 .2rem rgba(28,124,108,.14); }
@@ -180,7 +180,7 @@
                     <span class="cem-avatar cem-avatar-nav cem-avatar-placeholder">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
                 @endif
                 <span class="navbar-text small text-end">
-                    <a href="{{ route('profile.show', auth()->user()) }}" class="text-white text-decoration-none"><strong>{{ auth()->user()->name }}</strong></a><br>
+                    <a href="#header-profile-modal" class="text-white text-decoration-none" data-bs-toggle="modal"><strong>{{ auth()->user()->name }}</strong></a><br>
                     <span class="opacity-75 text-capitalize">{{ auth()->user()->role }}</span><br><a href="{{ route('profile.edit') }}" class="small text-white">Profil et paramètres</a>
                 </span>
                 <form method="POST" action="{{ route('logout') }}">
@@ -211,6 +211,41 @@
     </div>
 </main>
 
+<div class="modal fade" id="header-profile-modal" tabindex="-1" aria-labelledby="header-profile-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cem-card">
+            <div class="modal-header cem-card-header">
+                <h2 class="modal-title h5 mb-0" id="header-profile-modal-title">Mon profil</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    @if(auth()->user()->avatar_path)
+                        <img src="{{ route('profile.avatar', auth()->user()) }}" alt="Photo de {{ auth()->user()->name }}" class="cem-avatar cem-avatar-lg">
+                    @else
+                        <span class="cem-avatar cem-avatar-lg cem-avatar-placeholder">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                    @endif
+                    <div class="min-w-0">
+                        <h3 class="h4 mb-1 text-truncate">{{ auth()->user()->name }}</h3>
+                        <span class="badge cem-badge text-capitalize">{{ auth()->user()->role }}</span>
+                        <div class="cem-soft mt-2">{{ auth()->user()->position ?: 'Poste non renseigné' }}</div>
+                    </div>
+                </div>
+                <p class="mb-3">{{ auth()->user()->bio ?: 'Aucune biographie renseignée.' }}</p>
+                <div class="row g-2">
+                    <div class="col-6"><div class="cem-info-box"><span>Département</span><strong>{{ auth()->user()->department ?: 'Non renseigné' }}</strong></div></div>
+                    <div class="col-6"><div class="cem-info-box"><span>Domicile</span><strong>{{ auth()->user()->domicile ?: 'Non renseigné' }}</strong></div></div>
+                    <div class="col-6"><div class="cem-info-box"><span>Téléphone</span><strong>{{ auth()->user()->phone ?: 'Non renseigné' }}</strong></div></div>
+                    <div class="col-6"><div class="cem-info-box"><span>Email</span><strong class="text-break">{{ auth()->user()->email }}</strong></div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ route('profile.edit') }}" class="btn btn-cem">Modifier mon profil</a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 @stack('scripts')
 <script>
