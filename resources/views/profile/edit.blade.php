@@ -22,7 +22,7 @@
                         <div class="col-md-7"><label class="form-label">Photo de profil</label><input type="file" name="avatar" class="form-control" accept=".jpg,.jpeg,.png,.webp"><div class="form-text">JPG, PNG ou WEBP, 5 Mo maximum.</div></div>
                         <div class="col-md-5"><label class="form-label">Thème de l'application</label><select name="theme" class="form-select"><option value="system" @selected($user->theme === 'system')>Système</option><option value="light" @selected($user->theme === 'light')>Clair</option><option value="dark" @selected($user->theme === 'dark')>Sombre</option></select></div>
                     </div>
-                    <div class="d-flex gap-2 mt-4"><button class="btn btn-cem">Enregistrer</button><a href="{{ route('profile.show', $user) }}" class="btn btn-outline-secondary">Annuler</a></div>
+                    <div class="d-flex gap-2 mt-4"><button class="btn btn-cem">Enregistrer</button><a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Annuler</a></div>
                 </form>
             </div>
         </div>
