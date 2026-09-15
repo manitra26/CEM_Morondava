@@ -21,11 +21,16 @@
             background: linear-gradient(135deg, #10363a 0%, #1b6b61 100%);
             box-shadow: 0 12px 30px rgba(16, 54, 58, 0.2);
         }
+        .cem-sidebar .nav-link { padding: .75rem 1rem; border-radius: .75rem; } .cem-sidebar .nav-link:hover, .cem-sidebar .nav-link:focus-visible, .cem-sidebar .nav-link.is-active { background: rgba(255,255,255,.14); } @media (min-width: 992px) { .cem-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 1030; width: 17rem; padding: 1.5rem 1rem; overflow-y: auto; } .cem-sidebar-inner { min-height: 100%; display: flex; flex-direction: column; align-items: stretch; } .cem-sidebar .navbar-collapse { display: flex !important; flex: 1 1 auto; flex-direction: column; align-items: stretch; width: 100%; } .cem-sidebar .navbar-nav { width: 100%; margin-right: 0 !important; } .cem-sidebar-profile { margin-top: auto; } .cem-shell { min-height: 100vh; margin-left: 17rem; } } @media (max-width: 991.98px) { .cem-sidebar { padding: .75rem 0; } .cem-sidebar-profile { padding-top: 1rem; } }
         .cem-navbar .nav-link,
         .cem-navbar .navbar-brand,
         .cem-navbar .navbar-text {
             color: #fff !important;
         }
+        @media (min-width: 992px) { .cem-sidebar .navbar-nav { display: flex !important; flex-direction: column !important; gap: .35rem; margin-top: 1.25rem !important; margin-bottom: 0 !important; } .cem-sidebar .nav-item, .cem-sidebar .nav-link { width: 100%; } .cem-sidebar .nav-link { display: block; } .cem-sidebar-profile { order: -1; display: grid !important; grid-template-columns: auto minmax(0, 1fr); width: 100%; gap: .75rem !important; margin: 0 0 1.5rem; padding: 0 0 1.25rem; border-bottom: 1px solid rgba(255,255,255,.18); } .cem-sidebar-profile .navbar-text { min-width: 0; text-align: left !important; } .cem-sidebar-profile form { grid-column: 1 / -1; width: 100%; } .cem-sidebar-profile form .btn { width: 100%; } }
+        .cem-sidebar-brand { width: 100%; } .cem-sidebar-logo-toggle { display: inline-flex; align-items: center; width: 100%; gap: .65rem; padding: 0; border: 0; background: transparent; color: #fff; text-align: left; } .cem-sidebar-logo-toggle:hover .cem-brand-logo, .cem-sidebar-logo-toggle:focus-visible .cem-brand-logo { transform: scale(1.06); box-shadow: 0 .45rem 1.1rem rgba(0,0,0,.2); } .cem-brand-logo { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; border: 2px solid rgba(255,255,255,.8); border-radius: .8rem; background: linear-gradient(135deg, #d87c4d, #f1bd57); color: #10363a; font-size: .68rem; font-weight: 800; letter-spacing: -.04em; transition: transform .15s ease, box-shadow .15s ease; } .cem-brand-name { color: #fff; font-size: 1.15rem; font-weight: 700; } @media (min-width: 992px) { .cem-sidebar { transition: width .2s ease, padding .2s ease; } .cem-shell { transition: margin-left .2s ease; } .cem-sidebar-profile { order: initial; margin-top: auto; margin-bottom: 0; padding-top: 1.25rem; padding-bottom: 0; border-top: 1px solid rgba(255,255,255,.18); border-bottom: 0; } body.sidebar-collapsed .cem-sidebar { width: 6rem; padding-left: .75rem; padding-right: .75rem; } body.sidebar-collapsed .cem-shell { margin-left: 6rem; } body.sidebar-collapsed .cem-brand-name { display: none; } }
+        html, body { max-width: 100%; overflow-x: hidden; } .cem-sidebar { overflow-x: hidden; } @media (min-width: 992px) { .cem-sidebar-brand { min-width: 0; } .cem-sidebar-logo-toggle { min-width: 0; } .cem-brand-name { white-space: nowrap; } body.sidebar-collapsed .cem-sidebar-brand, body.sidebar-collapsed .cem-sidebar-logo-toggle { display: flex; justify-content: center; } }
+        .cem-nav-icon { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; flex: 0 0 1.4rem; color: currentColor; line-height: 1; } .cem-nav-icon svg, .cem-logout-icon svg { width: 1.25rem; height: 1.25rem; } .cem-nav-label { min-width: 0; } @media (min-width: 992px) { .cem-sidebar .nav-link { display: flex; align-items: center; gap: .75rem; } body.sidebar-collapsed .cem-sidebar-inner { padding-left: 0 !important; padding-right: 0 !important; } body.sidebar-collapsed .cem-sidebar .navbar-collapse { display: flex !important; } body.sidebar-collapsed .cem-sidebar .nav-item { display: flex; justify-content: center; } body.sidebar-collapsed .cem-sidebar .nav-link { position: relative; justify-content: center; width: 4rem !important; height: 4rem !important; min-height: 4rem; flex: 0 0 4rem; padding: 0; border-radius: 1rem !important; overflow: visible; } body.sidebar-collapsed .cem-sidebar .nav-link.is-active { border-radius: 1rem !important; } body.sidebar-collapsed .cem-sidebar .nav-link::after { content: attr(data-nav-label); position: absolute; left: calc(100% + .75rem); top: 50%; z-index: 1040; transform: translateY(-50%); padding: .4rem .65rem; border-radius: .45rem; background: #10363a; color: white; font-size: .78rem; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s ease; box-shadow: 0 .5rem 1.25rem rgba(16,54,58,.2); } body.sidebar-collapsed .cem-sidebar .nav-link:hover::after, body.sidebar-collapsed .cem-sidebar .nav-link:focus-visible::after { opacity: 1; } body.sidebar-collapsed .cem-sidebar .cem-nav-label { display: none; } body.sidebar-collapsed .cem-sidebar-profile { display: block !important; width: 4rem; align-self: center; margin-top: auto; margin-left: 0; margin-right: 0; padding: .75rem 0 0; border: 0; } body.sidebar-collapsed .cem-sidebar-profile > img, body.sidebar-collapsed .cem-sidebar-profile > .navbar-text { display: none !important; } body.sidebar-collapsed .cem-sidebar-profile form, body.sidebar-collapsed .cem-sidebar-profile form .btn { display: grid; place-items: center; width: 4rem; height: 4rem; padding: 0; } body.sidebar-collapsed .cem-sidebar-profile form .btn { border-radius: 1rem; } body.sidebar-collapsed .cem-sidebar-profile .cem-logout-label { display: none; } }
         .cem-shell {
             min-height: calc(100vh - 72px);
         }
@@ -156,24 +161,29 @@
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg cem-navbar navbar-dark">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand fw-bold" href="{{ route('dashboard') }}">CEM Morondava</a>
+<nav class="navbar navbar-expand-lg cem-navbar cem-sidebar navbar-dark">
+    <div class="container-fluid px-4 cem-sidebar-inner">
+        <div class="cem-sidebar-brand">
+            <button id="cem-sidebar-toggle" class="cem-sidebar-logo-toggle" type="button" aria-label="Masquer la sidebar" aria-expanded="true">
+                <span class="cem-brand-logo" aria-hidden="true">CEM</span>
+                <span class="cem-brand-name">CEM Morondava</span>
+            </button>
+        </div>
         <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse" data-bs-target="#cemNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="cemNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Tableau de bord</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('reports.index') }}">Rapports</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('groups.index') }}">Discussions</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('private.messages.index') }}">Messages</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('notifications.index') }}">Notifications</a></li>
+            <ul class="navbar-nav cem-sidebar-links me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}" data-nav-label="Tableau de bord" href="{{ route('dashboard') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg></span><span class="cem-nav-label">Tableau de bord</span></a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('reports.*') ? 'is-active' : '' }}" data-nav-label="Rapports" href="{{ route('reports.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><span class="cem-nav-label">Rapports</span></a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('groups.*') ? 'is-active' : '' }}" data-nav-label="Discussions" href="{{ route('groups.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-4.2-1L3 20l1.5-4.1A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg></span><span class="cem-nav-label">Discussions</span></a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('private.messages.*') ? 'is-active' : '' }}" data-nav-label="Messages" href="{{ route('private.messages.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span class="cem-nav-label">Messages</span></a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('notifications.*') ? 'is-active' : '' }}" data-nav-label="Notifications" href="{{ route('notifications.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><span class="cem-nav-label">Notifications</span></a></li>
                 @if(auth()->user()->isDirector())
-                    <li class="nav-item"><a class="nav-link" href="{{ route('users.index') }}">Utilisateurs</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('users.*') ? 'is-active' : '' }}" data-nav-label="Utilisateurs" href="{{ route('users.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M17 11a4 4 0 0 0 0-8M21 21v-2a4 4 0 0 0-3-3.87"/></svg></span><span class="cem-nav-label">Utilisateurs</span></a></li>
                 @endif
             </ul>
-            <div class="d-flex align-items-center gap-3">
+            <div class="cem-sidebar-profile d-flex align-items-center gap-3">
                 @if(auth()->user()->avatar_path)
                     <img src="{{ route('profile.avatar', auth()->user()) }}" alt="Photo de profil" class="cem-avatar cem-avatar-nav">
                 @else
@@ -185,7 +195,7 @@
                 </span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button class="btn btn-sm btn-light" type="submit">Déconnexion</button>
+                    <button class="btn btn-sm btn-light d-flex align-items-center justify-content-center gap-2" type="submit" aria-label="Déconnexion"><span class="cem-logout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3M21 19V5a2 2 0 0 0-2-2h-6"/></svg></span><span class="cem-logout-label">Déconnexion</span></button>
                 </form>
             </div>
         </div>
@@ -255,6 +265,8 @@
         document.documentElement.classList.toggle('theme-dark', dark);
     })();
 </script>
+
+<script>(() => { const button = document.querySelector('#cem-sidebar-toggle'); if (!button) return; const apply = (collapsed) => { document.body.classList.toggle('sidebar-collapsed', collapsed); button.setAttribute('aria-expanded', String(!collapsed)); button.setAttribute('aria-label', collapsed ? 'Afficher la sidebar' : 'Masquer la sidebar'); }; apply(localStorage.getItem('cem-sidebar-collapsed') === 'true'); button.addEventListener('click', () => { const collapsed = !document.body.classList.contains('sidebar-collapsed'); apply(collapsed); localStorage.setItem('cem-sidebar-collapsed', String(collapsed)); }); })();</script>
 
 </body>
 </html>
