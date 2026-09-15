@@ -434,6 +434,9 @@
     const status = document.querySelector('#chat-status');
     if (!chat || !messageList) return;
     const url = chat.dataset.messagesUrl;
+    const scrollToLatestMessage = (behavior = 'auto') => {
+        messageList.scrollTo({ top: messageList.scrollHeight, behavior });
+    };
     const render = (messages) => messages.forEach((message) => {
         if (chat.querySelector('[data-message-id=\"' + message.id + '\"]')) return;
         const item = document.createElement('div');
@@ -575,10 +578,11 @@
             if (!response.ok) throw new Error('send');
             content.value = '';
             await refresh();
+            scrollToLatestMessage('smooth');
         } finally { submit.disabled = false; }
         });
     }
-    messageList.scrollTop = messageList.scrollHeight;
+    scrollToLatestMessage();
     refresh();
     window.setInterval(refresh, 2000);
 })();
