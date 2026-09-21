@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,13 +12,20 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $this->ensureDirector();
 
-        $users = User::orderBy('name')->get();
+        $search = $request->string('search')->trim()->toString();
 
-        return view('users.index', compact('users'));
+        $users = User::query()
+            ->when($search !== '', function (Builder $query) use ($search): void {
+                $query->whereAny(['name', 'email', 'phone'], 'like', "%{$search}%");
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('users.index', compact('search', 'users'));
     }
 
     public function store(Request $request): RedirectResponse
