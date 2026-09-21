@@ -41,6 +41,35 @@
         .soft {
             color: rgba(20, 52, 60, .72);
         }
+        .password-field {
+            position: relative;
+        }
+        .password-field .form-control {
+            padding-right: 3rem;
+        }
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 0.85rem;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #5d6d73;
+            display: grid;
+            place-items: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            cursor: pointer;
+        }
+        .password-toggle:focus {
+            outline: 2px solid rgba(28, 124, 108, 0.4);
+            border-radius: 50%;
+        }
+        .password-toggle svg {
+            width: 1.2rem;
+            height: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -79,11 +108,27 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Mot de passe</label>
-                        <input type="password" name="password" class="form-control form-control-lg" required>
+                        <div class="password-field">
+                            <input type="password" name="password" class="form-control form-control-lg" required>
+                            <button type="button" class="password-toggle" data-password-toggle aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Confirmation</label>
-                        <input type="password" name="password_confirmation" class="form-control form-control-lg" required>
+                        <div class="password-field">
+                            <input type="password" name="password_confirmation" class="form-control form-control-lg" required>
+                            <button type="button" class="password-toggle" data-password-toggle aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-cem btn-lg w-100 mt-4">Créer mon compte</button>
@@ -95,5 +140,33 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+        const field = button.closest('.password-field');
+        const input = field.querySelector('input');
+        const eyeOpen = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        `;
+        const eyeClosed = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 3l18 18"></path>
+                <path d="M10.58 10.58A2 2 0 0 0 13.42 13.42"></path>
+                <path d="M9.88 5.08A10.94 10.94 0 0 1 12 5c6.5 0 10 7 10 7a16.77 16.77 0 0 1-4.21 5.32"></path>
+                <path d="M6.61 6.61A16.8 16.8 0 0 0 2 12s3.5 7 10 7a11.17 11.17 0 0 0 5.39-1.61"></path>
+            </svg>
+        `;
+
+        button.addEventListener('click', function () {
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            button.innerHTML = isHidden ? eyeClosed : eyeOpen;
+            button.setAttribute('aria-label', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+            button.setAttribute('title', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+        });
+    });
+</script>
 </body>
 </html>
