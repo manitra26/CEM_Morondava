@@ -70,7 +70,7 @@
                         <div class="d-flex justify-content-between gap-3">
                             <div>
                                 <h5 class="mb-1">{{ $report->title }}</h5>
-                                <div class="small cem-soft">Par <a href="{{ route('profile.show', $report->user) }}">{{ $report->user->name }}</a> le {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
+                                <div class="small cem-soft">Par <button type="button" class="btn btn-link p-0 border-0 align-baseline member-profile-trigger" data-member-name="{{ $report->user->name }}" data-member-role="{{ ucfirst($report->user->role) }}" data-member-position="{{ $report->user->position }}" data-member-department="{{ $report->user->department }}" data-member-domicile="{{ $report->user->domicile }}" data-member-phone="{{ $report->user->phone }}" data-member-email="{{ $report->user->email }}" data-member-bio="{{ $report->user->bio }}" data-member-avatar="{{ $report->user->avatar_path ? route('profile.avatar', $report->user) : '' }}" data-member-initial="{{ strtoupper(substr($report->user->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $report->user) }}" data-member-is-current="{{ $report->user->id === auth()->id() ? '1' : '0' }}">{{ $report->user->name }}</button> le {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
                             </div>
                             @if($report->attachment_path)
                                 <a href="{{ route('reports.download', $report) }}" class="btn btn-outline-secondary btn-sm">Pièce jointe</a>
@@ -151,4 +151,81 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="member-profile-modal" tabindex="-1" aria-labelledby="member-profile-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cem-card">
+            <div class="modal-header cem-card-header">
+                <h2 class="modal-title h5 mb-0" id="member-profile-modal-title">Profil du membre</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img id="member-profile-avatar" src="" alt="" class="cem-avatar cem-avatar-lg d-none">
+                    <span id="member-profile-initial" class="cem-avatar cem-avatar-lg cem-avatar-placeholder"></span>
+                    <div class="min-w-0">
+                        <h3 id="member-profile-name" class="h4 mb-1 text-truncate"></h3>
+                        <span id="member-profile-role" class="badge cem-badge"></span>
+                        <div id="member-profile-position" class="cem-soft mt-2"></div>
+                    </div>
+                </div>
+                <p id="member-profile-bio" class="mb-3"></p>
+                <div class="row g-2">
+                    <div class="col-6"><div class="cem-info-box"><span>Département</span><strong id="member-profile-department"></strong></div></div>
+                    <div class="col-6"><div class="cem-info-box"><span>Domicile</span><strong id="member-profile-domicile"></strong></div></div>
+                    <div class="col-6"><div class="cem-info-box"><span>Téléphone</span><strong id="member-profile-phone"></strong></div></div>
+                    <div class="col-6"><div class="cem-info-box"><span>Email</span><strong id="member-profile-email" class="text-break"></strong></div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="member-profile-message" href="#" class="btn btn-cem">Message</a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+(() => {
+    const modal = document.querySelector('#member-profile-modal');
+    if (!modal) return;
+
+    const avatar = document.querySelector('#member-profile-avatar');
+    const initial = document.querySelector('#member-profile-initial');
+    const name = document.querySelector('#member-profile-name');
+    const role = document.querySelector('#member-profile-role');
+    const position = document.querySelector('#member-profile-position');
+    const bio = document.querySelector('#member-profile-bio');
+    const department = document.querySelector('#member-profile-department');
+    const domicile = document.querySelector('#member-profile-domicile');
+    const phone = document.querySelector('#member-profile-phone');
+    const email = document.querySelector('#member-profile-email');
+    const message = document.querySelector('#member-profile-message');
+
+    document.querySelectorAll('.member-profile-trigger').forEach((button) => {
+        button.addEventListener('click', () => {
+            const member = button.dataset;
+            name.textContent = member.memberName;
+            role.textContent = member.memberRole;
+            position.textContent = member.memberPosition || 'Poste non renseigné';
+            bio.textContent = member.memberBio || 'Aucune biographie renseignée.';
+            department.textContent = member.memberDepartment || 'Non renseigné';
+            domicile.textContent = member.memberDomicile || 'Non renseigné';
+            phone.textContent = member.memberPhone || 'Non renseigné';
+            email.textContent = member.memberEmail || 'Non renseigné';
+            initial.textContent = member.memberInitial;
+            initial.classList.toggle('d-none', Boolean(member.memberAvatar));
+            avatar.classList.toggle('d-none', !member.memberAvatar);
+            avatar.src = member.memberAvatar || '';
+            avatar.alt = member.memberAvatar ? 'Photo de ' + member.memberName : '';
+            message.href = member.memberMessageUrl;
+            message.classList.toggle('d-none', member.memberIsCurrent === '1');
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+        });
+    });
+})();
+</script>
+@endpush
+
 @endsection
