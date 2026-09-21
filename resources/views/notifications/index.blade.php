@@ -113,3 +113,15 @@
             phone.textContent = member.memberPhone || 'Non renseign\u00e9';
             email.textContent = member.memberEmail || 'Non renseign\u00e9';
             initial.textContent = member.memberInitial;
+            initial.classList.toggle('d-none', Boolean(member.memberAvatar));
+            avatar.classList.toggle('d-none', !member.memberAvatar);
+            avatar.src = member.memberAvatar || '';
+            avatar.alt = member.memberAvatar ? 'Photo de ' + member.memberName : '';
+            message.href = member.memberMessageUrl;
+            message.classList.toggle('d-none', member.memberIsCurrent === '1');
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+        });
+    });
+})();
+</script>
+@endpush
