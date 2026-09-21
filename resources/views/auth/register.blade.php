@@ -6,9 +6,11 @@
     <title>Créer un compte - CEM Morondava</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
+        html, body {
+            height: 100%;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden;
             background: radial-gradient(circle at top, #14424a 0, #0d1f24 48%, #071114 100%);
             color: white;
         }
@@ -16,11 +18,13 @@
             min-height: 100vh;
             display: grid;
             place-items: center;
-            padding: 2rem;
+            padding: 1rem;
+            overflow: hidden;
         }
         .register-card {
             width: 100%;
             max-width: 860px;
+            max-height: calc(100vh - 4rem);
             overflow: hidden;
             border-radius: 1.75rem;
             background: rgba(255,255,255,0.07);
@@ -30,16 +34,43 @@
         }
         .register-visual {
             background: linear-gradient(160deg, #d87c4d 0%, #1c7c6c 100%);
-            padding: 3rem;
+            padding: 2rem 2rem 1rem;
             min-height: 100%;
         }
         .register-panel {
             background: #f8faf9;
             color: #14343c;
-            padding: 3rem;
+            padding: 1.25rem 2rem 1rem;
         }
         .soft {
             color: rgba(20, 52, 60, .72);
+        }
+        .auth-brand {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 0.7rem auto;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid rgba(0,0,0,.08);
+            box-shadow: 0 8px 18px rgba(0,0,0,.08);
+        }
+        .register-login-link {
+            display: block;
+            margin-top: 0.45rem;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: #111111;
+            font-weight: 500;
+        }
+        .register-login-link a {
+            color: #0d6e8a;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .register-login-link a:hover {
+            text-decoration: underline;
         }
         .password-field {
             position: relative;
@@ -86,6 +117,7 @@
             </div>
         </div>
         <div class="col-lg-7 register-panel">
+            <img src="{{ asset('images/cem.png') }}" alt="Logo CEM Menabe" class="auth-brand">
             <h2 class="fw-bold mb-2">Inscription</h2>
             <p class="soft mb-4">Complétez vos informations pour créer votre compte employé.</p>
 
@@ -132,7 +164,7 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-cem btn-lg w-100 mt-4">Créer mon compte</button>
-                <p class="mt-3 mb-0 text-center">
+                <p class="register-login-link text-center mb-0">
                     Déjà un compte ? <a href="{{ route('login') }}">Se connecter</a>
                 </p>
             </form>

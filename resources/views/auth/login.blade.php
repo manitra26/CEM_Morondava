@@ -6,9 +6,11 @@
     <title>Connexion - CEM Morondava</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
+        html, body {
+            height: 100%;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden;
             background: radial-gradient(circle at top, #14424a 0, #0d1f24 48%, #071114 100%);
             color: white;
         }
@@ -16,11 +18,13 @@
             min-height: 100vh;
             display: grid;
             place-items: center;
-            padding: 2rem;
+            padding: 1rem;
+            overflow: hidden;
         }
         .login-card {
             width: 100%;
             max-width: 980px;
+            max-height: calc(100vh - 4rem);
             overflow: hidden;
             border-radius: 1.75rem;
             background: rgba(255,255,255,0.07);
@@ -30,16 +34,27 @@
         }
         .login-visual {
             background: linear-gradient(160deg, #1c7c6c 0%, #d87c4d 100%);
-            padding: 3rem;
+            padding: 2rem 2rem 1rem;
             min-height: 100%;
         }
         .login-panel {
             background: #f8faf9;
             color: #14343c;
-            padding: 3rem;
+            padding: 1.75rem 2rem 1.5rem;
         }
         .soft {
             color: rgba(20, 52, 60, .72);
+        }
+        .auth-brand {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 1rem auto;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid rgba(0,0,0,.08);
+            box-shadow: 0 8px 18px rgba(0,0,0,.08);
         }
         .password-field {
             position: relative;
@@ -91,6 +106,7 @@
             </div>
         </div>
         <div class="col-lg-7 login-panel">
+            <img src="{{ asset('images/cem.png') }}" alt="Logo CEM Menabe" class="auth-brand">
             <h2 class="fw-bold mb-2">S'authentifier</h2>
             <p class="soft mb-4">Connectez-vous pour accéder au tableau de bord du CEM.</p>
 
@@ -124,7 +140,7 @@
                 </div>
                 <button type="submit" class="btn btn-cem btn-lg w-100">Se connecter</button>
                 <p class="mt-3 mb-0 text-center">
-                    Nouveau compte ? <a href="{{ route('register') }}">S'inscrire</a>
+                    Nouveau compte ? <a href="{{ route('register') }}" style="color: #0d6e8a; font-weight: 700; text-decoration: none;">S'inscrire</a>
                 </p>
             </form>
         </div>
