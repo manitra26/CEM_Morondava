@@ -223,6 +223,51 @@
         html.theme-dark .cem-user-link:hover {
             color: #5eead4 !important;
         }
+        .dashboard-scroll {
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(28, 124, 108, 0.35) transparent;
+        }
+        .dashboard-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .dashboard-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .dashboard-scroll::-webkit-scrollbar-thumb {
+            background: rgba(28, 124, 108, 0.35);
+            border-radius: 999px;
+        }
+        .dashboard-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(28, 124, 108, 0.6);
+        }
+        .dashboard-scroll > div:last-child {
+            border-bottom: 0 !important;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        html.theme-dark .dashboard-scroll::-webkit-scrollbar-thumb {
+            background: rgba(45, 212, 191, 0.35);
+        }
+        .cem-stat-card {
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .cem-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 30px rgba(17, 50, 58, 0.12);
+        }
+        html.theme-dark .cem-stat-card:hover {
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+        }
+        .cem-stat-icon {
+            width: 2.75rem;
+            height: 2.75rem;
+            flex: 0 0 2.75rem;
+            border-radius: 0.85rem;
+            display: grid;
+            place-items: center;
+        }
     </style>
 </head>
 <body>

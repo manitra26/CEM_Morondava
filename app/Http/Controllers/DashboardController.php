@@ -36,10 +36,9 @@ class DashboardController extends Controller
             'totalReports' => $reportsQuery->count(),
             'totalGroups' => $groupsQuery->count(),
             'unreadNotifications' => InternalNotification::where('user_id', $user->id)->where('is_read', false)->count(),
-            'recentReports' => $reportsQuery->take(5)->get(),
-            'recentGroups' => $groupsQuery->take(5)->get(),
-            'recentMessages' => $recentMessagesQuery->take(5)->get(),
-            'notifications' => InternalNotification::where('user_id', $user->id)->latest()->take(6)->get(),
+            'recentReports' => $reportsQuery->take(10)->get(),
+            'recentGroups' => $groupsQuery->take(10)->get(),
+            'recentMessages' => $recentMessagesQuery->take(10)->get(),
             'isDirector' => $isDirector,
         ]);
     }
