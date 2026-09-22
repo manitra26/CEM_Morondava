@@ -70,7 +70,7 @@
                         <div class="d-flex justify-content-between gap-3">
                             <div>
                                 <h5 class="mb-1">{{ $report->title }}</h5>
-                                <div class="small cem-soft">Par <button type="button" class="btn btn-link p-0 border-0 align-baseline member-profile-trigger" data-member-name="{{ $report->user->name }}" data-member-role="{{ ucfirst($report->user->role) }}" data-member-position="{{ $report->user->position }}" data-member-department="{{ $report->user->department }}" data-member-domicile="{{ $report->user->domicile }}" data-member-phone="{{ $report->user->phone }}" data-member-email="{{ $report->user->email }}" data-member-bio="{{ $report->user->bio }}" data-member-avatar="{{ $report->user->avatar_path ? route('profile.avatar', $report->user) : '' }}" data-member-initial="{{ strtoupper(substr($report->user->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $report->user) }}" data-member-is-current="{{ $report->user->id === auth()->id() ? '1' : '0' }}">{{ $report->user->name }}</button> le {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
+                                <div class="small cem-soft">Par <button type="button" class="btn btn-link p-0 border-0 align-baseline text-decoration-none fw-semibold member-profile-trigger" data-member-name="{{ $report->user->name }}" data-member-role="{{ ucfirst($report->user->role) }}" data-member-position="{{ $report->user->position }}" data-member-department="{{ $report->user->department }}" data-member-domicile="{{ $report->user->domicile }}" data-member-phone="{{ $report->user->phone }}" data-member-email="{{ $report->user->email }}" data-member-bio="{{ $report->user->bio }}" data-member-avatar="{{ $report->user->avatar_path ? route('profile.avatar', $report->user) : '' }}" data-member-initial="{{ strtoupper(substr($report->user->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $report->user) }}" data-member-is-current="{{ $report->user->id === auth()->id() ? '1' : '0' }}">{{ $report->user->name }}</button> le {{ $report->submitted_at?->format('d/m/Y H:i') }}</div>
                             </div>
                             @if($report->attachment_path)
                                 <a href="{{ route('reports.download', $report) }}" class="btn btn-outline-secondary btn-sm">Pièce jointe</a>
@@ -95,7 +95,7 @@
                         <div class="d-flex justify-content-between gap-3">
                             <div>
                                 <h6 class="mb-1">{{ $message->discussionGroup->name }}</h6>
-                                <div class="small cem-soft">{{ $message->user->name }} - {{ $message->created_at->format('d/m/Y H:i') }}</div>
+                                <div class="small cem-soft"><button type="button" class="btn btn-link p-0 border-0 align-baseline text-decoration-none fw-semibold member-profile-trigger" data-member-name="{{ $message->user->name }}" data-member-role="{{ ucfirst($message->user->role) }}" data-member-position="{{ $message->user->position }}" data-member-department="{{ $message->user->department }}" data-member-domicile="{{ $message->user->domicile }}" data-member-phone="{{ $message->user->phone }}" data-member-email="{{ $message->user->email }}" data-member-bio="{{ $message->user->bio }}" data-member-avatar="{{ $message->user->avatar_path ? route('profile.avatar', $message->user) : '' }}" data-member-initial="{{ strtoupper(substr($message->user->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $message->user) }}" data-member-is-current="{{ $message->user->id === auth()->id() ? '1' : '0' }}">{{ $message->user->name }}</button> - {{ $message->created_at->format('d/m/Y H:i') }}</div>
                             </div>
                         </div>
                         <p class="mt-2 mb-0">{{ $message->content }}</p>
@@ -117,7 +117,7 @@
                 @forelse ($recentGroups as $group)
                     <div class="border-bottom pb-3 mb-3">
                         <h6 class="mb-1">{{ $group->name }}</h6>
-                        <div class="small cem-soft">Créé par {{ $group->creator->name }}</div>
+                        <div class="small cem-soft">Créé par <button type="button" class="btn btn-link p-0 border-0 align-baseline text-decoration-none fw-semibold member-profile-trigger" data-member-name="{{ $group->creator->name }}" data-member-role="{{ ucfirst($group->creator->role) }}" data-member-position="{{ $group->creator->position }}" data-member-department="{{ $group->creator->department }}" data-member-domicile="{{ $group->creator->domicile }}" data-member-phone="{{ $group->creator->phone }}" data-member-email="{{ $group->creator->email }}" data-member-bio="{{ $group->creator->bio }}" data-member-avatar="{{ $group->creator->avatar_path ? route('profile.avatar', $group->creator) : '' }}" data-member-initial="{{ strtoupper(substr($group->creator->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $group->creator) }}" data-member-is-current="{{ $group->creator->id === auth()->id() ? '1' : '0' }}">{{ $group->creator->name }}</button></div>
                     </div>
                 @empty
                     <div class="cem-soft">Aucun groupe accessible.</div>

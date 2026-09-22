@@ -158,6 +158,71 @@
         .reaction-details-popover { position: absolute; z-index: 20; bottom: calc(100% + .45rem); left: 0; min-width: 18rem; max-width: 24rem; padding: .9rem; border-radius: 1rem; background: white; box-shadow: 0 10px 30px rgba(23,52,59,.22); }
         .reaction-details-trigger { border: 1px solid rgba(28,124,108,.2); cursor: pointer; }
         html.theme-dark .reaction-details-popover { background: #203337; color: #edf7f3; }
+        .password-field {
+            position: relative;
+        }
+        .password-field .form-control {
+            padding-right: 3rem;
+        }
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 0.85rem;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #5d6d73;
+            display: grid;
+            place-items: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            cursor: pointer;
+        }
+        .password-toggle:focus {
+            outline: 2px solid rgba(28, 124, 108, 0.4);
+            border-radius: 50%;
+        }
+        .password-toggle svg {
+            width: 1.2rem;
+            height: 1.2rem;
+        }
+        html.theme-dark .password-toggle {
+            color: #9ab0ad;
+        }
+        .btn.member-profile-trigger,
+        .member-profile-trigger,
+        .cem-user-name,
+        .cem-user-link {
+            color: #0d6e8a !important;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: none !important;
+            transition: color .15s ease, text-decoration .15s ease;
+        }
+        .btn.member-profile-trigger:hover,
+        .btn.member-profile-trigger:focus-visible,
+        .member-profile-trigger:hover,
+        .member-profile-trigger:focus-visible,
+        .cem-user-name:hover,
+        .cem-user-link:hover {
+            color: #084c61 !important;
+            text-decoration: underline !important;
+        }
+        html.theme-dark .btn.member-profile-trigger,
+        html.theme-dark .member-profile-trigger,
+        html.theme-dark .cem-user-name,
+        html.theme-dark .cem-user-link {
+            color: #2dd4bf !important;
+        }
+        html.theme-dark .btn.member-profile-trigger:hover,
+        html.theme-dark .btn.member-profile-trigger:focus-visible,
+        html.theme-dark .member-profile-trigger:hover,
+        html.theme-dark .member-profile-trigger:focus-visible,
+        html.theme-dark .cem-user-name:hover,
+        html.theme-dark .cem-user-link:hover {
+            color: #5eead4 !important;
+        }
     </style>
 </head>
 <body>
@@ -267,6 +332,34 @@
 </script>
 
 <script>(() => { const button = document.querySelector('#cem-sidebar-toggle'); if (!button) return; const apply = (collapsed) => { document.body.classList.toggle('sidebar-collapsed', collapsed); button.setAttribute('aria-expanded', String(!collapsed)); button.setAttribute('aria-label', collapsed ? 'Afficher la sidebar' : 'Masquer la sidebar'); }; apply(localStorage.getItem('cem-sidebar-collapsed') === 'true'); button.addEventListener('click', () => { const collapsed = !document.body.classList.contains('sidebar-collapsed'); apply(collapsed); localStorage.setItem('cem-sidebar-collapsed', String(collapsed)); }); })();</script>
-
+<script>
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('[data-password-toggle]');
+        if (!button) return;
+        const field = button.closest('.password-field');
+        if (!field) return;
+        const input = field.querySelector('input');
+        if (!input) return;
+        const eyeOpen = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        `;
+        const eyeClosed = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 3l18 18"></path>
+                <path d="M10.58 10.58A2 2 0 0 0 13.42 13.42"></path>
+                <path d="M9.88 5.08A10.94 10.94 0 0 1 12 5c6.5 0 10 7 10 7a16.77 16.77 0 0 1-4.21 5.32"></path>
+                <path d="M6.61 6.61A16.8 16.8 0 0 0 2 12s3.5 7 10 7a11.17 11.17 0 0 0 5.39-1.61"></path>
+            </svg>
+        `;
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        button.innerHTML = isHidden ? eyeClosed : eyeOpen;
+        button.setAttribute('aria-label', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+        button.setAttribute('title', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+    });
+</script>
 </body>
 </html>

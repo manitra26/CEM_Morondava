@@ -64,21 +64,31 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="password-{{ $user->id }}">Nouveau mot de passe</label>
-                            <div class="input-group">
+                            <div class="password-field">
                                 <input id="password-{{ $user->id }}" type="password" name="password" class="form-control" autocomplete="new-password">
-                                <button type="button" class="btn btn-outline-secondary" data-password-toggle data-password-target="password-{{ $user->id }}">Afficher</button>
+                                <button type="button" class="password-toggle" data-password-toggle aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="password-confirmation-{{ $user->id }}">Confirmation</label>
-                            <div class="input-group">
+                            <div class="password-field">
                                 <input id="password-confirmation-{{ $user->id }}" type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
-                                <button type="button" class="btn btn-outline-secondary" data-password-toggle data-password-target="password-confirmation-{{ $user->id }}">Afficher</button>
+                                <button type="button" class="password-toggle" data-password-toggle aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                        <div class="small cem-soft">{{ $user->isDirector() ? 'Directeur' : 'Employ&eacute;' }}</div>
+                        <div class="small cem-soft">{{ $user->isDirector() ? 'Directeur' : 'Employé' }}</div>
                         <button type="submit" class="btn btn-cem btn-sm">Enregistrer</button>
                     </div>
                 </form>
@@ -110,8 +120,30 @@
                     <div class="row g-3">
                         <div class="col-md-6"><label class="form-label" for="create-name">Nom</label><input id="create-name" type="text" name="name" class="form-control" value="{{ old('name') }}" required></div>
                         <div class="col-md-6"><label class="form-label" for="create-email">Email</label><input id="create-email" type="email" name="email" class="form-control" value="{{ old('email') }}" required></div>
-                        <div class="col-md-6"><label class="form-label" for="create-password">Mot de passe</label><div class="input-group"><input id="create-password" type="password" name="password" class="form-control" autocomplete="new-password" required><button type="button" class="btn btn-outline-secondary" data-password-toggle data-password-target="create-password">Afficher</button></div></div>
-                        <div class="col-md-6"><label class="form-label" for="create-password-confirmation">Confirmation</label><div class="input-group"><input id="create-password-confirmation" type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required><button type="button" class="btn btn-outline-secondary" data-password-toggle data-password-target="create-password-confirmation">Afficher</button></div></div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-password">Mot de passe</label>
+                            <div class="password-field">
+                                <input id="create-password" type="password" name="password" class="form-control" autocomplete="new-password" required>
+                                <button type="button" class="password-toggle" data-password-toggle aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-password-confirmation">Confirmation</label>
+                            <div class="password-field">
+                                <input id="create-password-confirmation" type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required>
+                                <button type="button" class="password-toggle" data-password-toggle aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                         <div class="col-md-4"><label class="form-label" for="create-role">R&ocirc;le</label><select id="create-role" name="role" class="form-select" required><option value="employe" @selected(old('role', 'employe') === 'employe')>Employ&eacute;</option><option value="directeur" @selected(old('role') === 'directeur')>Directeur</option></select></div>
                         <div class="col-md-4"><label class="form-label" for="create-position">Poste</label><input id="create-position" type="text" name="position" class="form-control" value="{{ old('position') }}"></div>
                         <div class="col-md-4"><label class="form-label" for="create-department">D&eacute;partement</label><input id="create-department" type="text" name="department" class="form-control" value="{{ old('department') }}"></div>
@@ -129,23 +161,5 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-(() => {
-    document.querySelectorAll('[data-password-toggle]').forEach((button) => {
-        button.addEventListener('click', () => {
-            const input = document.getElementById(button.dataset.passwordTarget);
-            if (!input) return;
 
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-            button.textContent = isPassword ? 'Masquer' : 'Afficher';
-        });
-    });
 
-    @if (old('create_user_form'))
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('create-user-modal')).show();
-    @endif
-})();
-</script>
-@endpush
