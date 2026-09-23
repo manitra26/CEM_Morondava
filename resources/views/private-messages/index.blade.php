@@ -64,7 +64,111 @@
     .private-bubble { max-width: min(75%, 42rem); padding: .7rem .9rem; border-radius: 1rem; box-shadow: 0 5px 14px rgba(23,52,59,.08); }
     .private-bubble.mine { margin-left: auto; color: white; background: linear-gradient(135deg, #1c7c6c, #165e54); border-bottom-right-radius: .25rem; }
     .private-bubble.theirs { background: white; border-bottom-left-radius: .25rem; }
-    .private-attachment-preview { display: flex; align-items: center; gap: .75rem; padding: .65rem; margin-bottom: .75rem; border: 1px solid rgba(28,124,108,.25); border-radius: .85rem; background: rgba(28,124,108,.06); } .private-attachment-preview img { width: 4rem; height: 4rem; object-fit: cover; border-radius: .55rem; } .private-composer { border-top: 1px solid rgba(23,52,59,.1); }
+    .private-attachment-preview { display: flex; align-items: center; gap: .75rem; padding: .65rem; margin-bottom: .75rem; border: 1px solid rgba(28,124,108,.25); border-radius: .85rem; background: rgba(28,124,108,.06); } .private-attachment-preview img { width: 4rem; height: 4rem; object-fit: cover; border-radius: .55rem; }
+    .private-composer { border-top: 1px solid rgba(23,52,59,.1); }
+    html.theme-dark .private-composer { background: #1b2a2e; border-top-color: rgba(237,247,243,.1); }
+    .whatsapp-send-btn {
+        width: 2.65rem;
+        height: 2.65rem;
+        min-width: 2.65rem;
+        border-radius: 50%;
+        background: #1c7c6c;
+        color: #ffffff;
+        border: none;
+        outline: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 3px 10px rgba(28, 124, 108, 0.35);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: scale(0.65) rotate(-15deg);
+        transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    background-color 0.2s ease,
+                    box-shadow 0.2s ease,
+                    visibility 0.22s ease;
+        flex-shrink: 0;
+        padding: 0;
+    }
+    .whatsapp-send-btn:hover {
+        background: #155e52;
+        transform: scale(1.08) rotate(0deg);
+        box-shadow: 0 4px 14px rgba(28, 124, 108, 0.45);
+    }
+    .whatsapp-send-btn:active {
+        transform: scale(0.95);
+    }
+    .whatsapp-send-btn.is-visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: scale(1) rotate(0deg);
+    }
+    html.theme-dark .whatsapp-send-btn {
+        background: #1c7c6c;
+        box-shadow: 0 3px 12px rgba(28, 124, 108, 0.5);
+    }
+    html.theme-dark .whatsapp-send-btn:hover {
+        background: #239482;
+    }
+    .chat-textarea {
+        resize: none;
+        min-height: 2.65rem;
+        height: 2.65rem;
+        max-height: 8rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+        border-radius: 1.35rem;
+        line-height: 1.4;
+        overflow-y: hidden;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .chat-textarea:focus {
+        border-color: #1c7c6c;
+        box-shadow: 0 0 0 0.2rem rgba(28, 124, 108, 0.18);
+    }
+    html.theme-dark .chat-textarea {
+        background: #172428;
+        color: #edf7f3;
+        border-color: rgba(237, 247, 243, 0.18);
+    }
+    html.theme-dark .chat-textarea:focus {
+        border-color: #2dd4bf;
+        box-shadow: 0 0 0 0.2rem rgba(45, 212, 191, 0.2);
+    }
+    .private-attach-btn {
+        width: 2.65rem;
+        height: 2.65rem;
+        min-width: 2.65rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        border: 1px solid rgba(23, 52, 59, 0.15);
+        background: #ffffff;
+        color: #557279;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .private-attach-btn:hover {
+        background: #f0fdf9;
+        color: #1c7c6c;
+        border-color: #1c7c6c;
+    }
+    html.theme-dark .private-attach-btn {
+        background: #203337;
+        color: #9cb5be;
+        border-color: rgba(237, 247, 243, 0.15);
+    }
+    html.theme-dark .private-attach-btn:hover {
+        background: #283e43;
+        color: #2dd4bf;
+        border-color: #2dd4bf;
+    }
     .private-attachment { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .7rem; border-radius: .7rem; background: rgba(216,124,77,.12); }
     @media (max-width: 767.98px) { .private-messages-card { height: auto; min-height: 0; display: block; } .private-contacts { width: 100%; max-height: 18rem; border-right: 0; border-bottom: 1px solid rgba(23,52,59,.1); } .private-conversation { height: 32rem; min-height: 32rem; } .private-bubble { max-width: 88%; } }
     .private-image-trigger { display: block; border: 0; padding: 0; margin: 0; background: transparent; cursor: zoom-in; }
@@ -214,12 +318,18 @@
                         <button type="button" id="private-attachment-remove" class="btn btn-outline-danger btn-sm">Retirer</button>
                     </div>
                     <div class="d-flex gap-2 align-items-end">
-                        <label class="btn btn-outline-secondary mb-0" title="Ajouter une photo ou un fichier">
-                            <span>+</span>
+                        <label class="private-attach-btn mb-0" title="Ajouter une photo ou un fichier" aria-label="Joindre un fichier">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                            </svg>
                             <input id="private-attachment-input" type="file" name="attachment" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt">
                         </label>
-                        <textarea name="content" rows="2" class="form-control" placeholder="Ecrire un message...">{{ old('content') }}</textarea>
-                        <button type="submit" class="btn btn-cem">Envoyer</button>
+                        <textarea id="private-content" name="content" rows="1" class="form-control chat-textarea" placeholder="Écrire un message...">{{ old('content') }}</textarea>
+                        <button id="private-submit" type="submit" class="whatsapp-send-btn" title="Envoyer le message" aria-label="Envoyer">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" style="margin-left: 2px;">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                        </button>
                     </div>
                     <div class="small cem-soft mt-2">Photos, PDF, Word, Excel, PowerPoint, ZIP ou fichiers texte, 20 Mo maximum.</div>
                 </form>
@@ -397,6 +507,63 @@
 
     if (!form || !error || !submit) return;
 
+    const content = form.querySelector('textarea[name="content"]');
+    const attachmentInput = document.querySelector('#private-attachment-input');
+    const attachmentRemove = document.querySelector('#private-attachment-remove');
+
+    const updateSendButton = () => {
+        if (!content || !submit) return;
+        const hasText = content.value.trim().length > 0;
+        const hasFile = attachmentInput && attachmentInput.files && attachmentInput.files.length > 0;
+        if (hasText || hasFile) {
+            submit.classList.add('is-visible');
+        } else {
+            submit.classList.remove('is-visible');
+        }
+    };
+
+    const autoResize = () => {
+        if (!content) return;
+        content.style.height = 'auto';
+        const maxHeight = 130;
+        const nextHeight = Math.min(Math.max(content.scrollHeight, 42), maxHeight);
+        content.style.height = nextHeight + 'px';
+        content.style.overflowY = content.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    };
+
+    if (content) {
+        content.addEventListener('input', () => {
+            updateSendButton();
+            autoResize();
+        });
+
+        content.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                const hasText = content.value.trim().length > 0;
+                const hasFile = attachmentInput && attachmentInput.files && attachmentInput.files.length > 0;
+                if ((hasText || hasFile) && !submit.disabled) {
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
+                }
+            }
+        });
+    }
+
+    if (attachmentInput) {
+        attachmentInput.addEventListener('change', () => {
+            setTimeout(updateSendButton, 50);
+        });
+    }
+    if (attachmentRemove) {
+        attachmentRemove.addEventListener('click', () => {
+            setTimeout(updateSendButton, 50);
+        });
+    }
+
     document.addEventListener('click', (event) => {
         const button = event.target.closest('.private-reply-button');
         if (!button) return;
@@ -437,6 +604,8 @@
             replyPreview.classList.add('d-none');
             attachmentThumbnail?.replaceChildren();
             attachmentPreview?.classList.add('d-none');
+            autoResize();
+            updateSendButton();
             scrollToBottom('smooth');
             setTimeout(updateScrollButton, 200);
         } catch (exception) {
@@ -446,6 +615,9 @@
             submit.disabled = false;
         }
     });
+
+    updateSendButton();
+    autoResize();
 })();
 </script>
 @endsection

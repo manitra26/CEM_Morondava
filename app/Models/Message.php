@@ -17,6 +17,10 @@ class Message extends Model
         'user_id',
         'reply_to_id',
         'content',
+        'attachment_path',
+        'attachment_name',
+        'attachment_mime',
+        'attachment_size',
         'status',
     ];
 

@@ -4,14 +4,48 @@
 
 @section('content')
 <style>
-    .group-chat-card { display: grid; grid-template-columns: minmax(18rem, 23rem) minmax(0, 1fr); height: calc(100vh - 7rem); min-height: 40rem; overflow: hidden; }
-    .group-members-sidebar { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid rgba(23,52,59,.1); }
-    .group-members-list { min-height: 0; overflow-y: auto; }
+    .groups-page { min-height: calc(100vh - 8rem); }
+    .group-chat-card {
+        display: grid;
+        grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+        height: calc(100vh - 12.5rem);
+        min-height: 32rem;
+        max-height: calc(100vh - 12.5rem);
+        overflow: hidden;
+    }
+    .group-members-sidebar {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        height: 100%;
+        min-height: 0;
+        border-right: 1px solid rgba(23,52,59,.1);
+    }
+    .group-members-list {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
     .group-member-profile-button { width: 100%; border: 0; background: transparent; text-align: left; }
     .group-member-profile-button:hover, .group-member-profile-button:focus-visible { background: rgba(28,124,108,.1); }
-    .group-member { display: flex; align-items: center; gap: .75rem; padding: .8rem 1rem; border-bottom: 1px solid rgba(23,52,59,.07); }
-    .group-conversation { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-    .group-chat-scroll { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow: hidden; padding: 0; }
+    .group-member { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border-bottom: 1px solid rgba(23,52,59,.07); }
+    .group-conversation {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+    }
+    .group-chat-scroll {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+        padding: 0;
+    }
     .group-message-list-wrapper { position: relative; flex: 1 1 auto; min-height: 0; height: 0; display: flex; flex-direction: column; }
     #group-message-list { display: flex; flex: 1 1 auto; flex-direction: column; gap: .75rem; min-height: 0; height: 100%; overflow-y: auto; padding: 1.25rem; background: radial-gradient(circle at top, rgba(28,124,108,.08), transparent 45%); scrollbar-width: thin; }
     .whatsapp-scroll-bottom {
@@ -68,30 +102,197 @@
     .chat-message.mine a, .chat-message.mine .cem-user-meta, .chat-message.mine .cem-soft { color: white !important; }
     .chat-message.mine .cem-reply-quote { color: white; background: rgba(255,255,255,.12); border-left-color: #d87c4d; }
     .chat-message.mine .reply-message { color: white; border-color: rgba(255,255,255,.65); }
-    .group-chat-composer { order: 2; flex: 0 0 auto; margin: 0; padding: 1rem 1.25rem; border-top: 1px solid rgba(23,52,59,.1); background: white; }
-    .group-chat-composer textarea { resize: none; }
+    .group-chat-composer { order: 2; flex: 0 0 auto; margin: 0; padding: 0.75rem 1.25rem; border-top: 1px solid rgba(23,52,59,.1); background: white; }
+    html.theme-dark .group-chat-composer { background: #1b2a2e; border-top-color: rgba(237,247,243,.1); }
+    .whatsapp-send-btn {
+        width: 2.65rem;
+        height: 2.65rem;
+        min-width: 2.65rem;
+        border-radius: 50%;
+        background: #1c7c6c;
+        color: #ffffff;
+        border: none;
+        outline: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 3px 10px rgba(28, 124, 108, 0.35);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: scale(0.65) rotate(-15deg);
+        transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    background-color 0.2s ease,
+                    box-shadow 0.2s ease,
+                    visibility 0.22s ease;
+        flex-shrink: 0;
+        padding: 0;
+    }
+    .whatsapp-send-btn:hover {
+        background: #155e52;
+        transform: scale(1.08) rotate(0deg);
+        box-shadow: 0 4px 14px rgba(28, 124, 108, 0.45);
+    }
+    .whatsapp-send-btn:active {
+        transform: scale(0.95);
+    }
+    .whatsapp-send-btn.is-visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: scale(1) rotate(0deg);
+    }
+    html.theme-dark .whatsapp-send-btn {
+        background: #1c7c6c;
+        box-shadow: 0 3px 12px rgba(28, 124, 108, 0.5);
+    }
+    html.theme-dark .whatsapp-send-btn:hover {
+        background: #239482;
+    }
+    .chat-textarea {
+        resize: none;
+        min-height: 2.65rem;
+        height: 2.65rem;
+        max-height: 8rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+        border-radius: 1.35rem;
+        line-height: 1.4;
+        overflow-y: hidden;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .chat-textarea:focus {
+        border-color: #1c7c6c;
+        box-shadow: 0 0 0 0.2rem rgba(28, 124, 108, 0.18);
+    }
+    html.theme-dark .chat-textarea {
+        background: #172428;
+        color: #edf7f3;
+        border-color: rgba(237, 247, 243, 0.18);
+    }
+    html.theme-dark .chat-textarea:focus {
+        border-color: #2dd4bf;
+        box-shadow: 0 0 0 0.2rem rgba(45, 212, 191, 0.2);
+    }
+    .group-attach-btn {
+        width: 2.65rem;
+        height: 2.65rem;
+        min-width: 2.65rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        border: 1px solid rgba(23, 52, 59, 0.15);
+        background: #ffffff;
+        color: #557279;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .group-attach-btn:hover {
+        background: #f0fdf9;
+        color: #1c7c6c;
+        border-color: #1c7c6c;
+    }
+    html.theme-dark .group-attach-btn {
+        background: #203337;
+        color: #9cb5be;
+        border-color: rgba(237, 247, 243, 0.15);
+    }
+    html.theme-dark .group-attach-btn:hover {
+        background: #283e43;
+        color: #2dd4bf;
+        border-color: #2dd4bf;
+    }
+    .group-attachment-preview {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .65rem;
+        margin-bottom: .75rem;
+        border: 1px solid rgba(28,124,108,.25);
+        border-radius: .85rem;
+        background: rgba(28,124,108,.06);
+    }
+    .group-attachment-preview img {
+        width: 4rem;
+        height: 4rem;
+        object-fit: cover;
+        border-radius: .55rem;
+    }
+    .group-attachment {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .45rem .7rem;
+        border-radius: .7rem;
+        background: rgba(216,124,77,.12);
+    }
+    .group-image-trigger {
+        display: block;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        background: transparent;
+        cursor: zoom-in;
+    }
+    .group-image-trigger img {
+        display: block;
+        max-width: min(24rem, 100%);
+        max-height: 24rem;
+        border-radius: .7rem;
+        object-fit: cover;
+    }
     .group-chat-read-only { order: 2; flex: 0 0 auto; margin: 0; border-top: 1px solid rgba(23,52,59,.1); border-radius: 0; }
-    @media (max-width: 767.98px) { .group-chat-card { display: block; height: auto; min-height: 0; } .group-members-sidebar { max-height: 18rem; border-right: 0; border-bottom: 1px solid rgba(23,52,59,.1); } .group-conversation { height: 40rem; } .chat-message { max-width: 90%; } }
+    @media (max-width: 991.98px) {
+        .group-chat-card {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            min-height: 0;
+            max-height: none;
+        }
+        .group-members-sidebar {
+            max-height: 14rem;
+            border-right: 0;
+            border-bottom: 1px solid rgba(23,52,59,.1);
+            height: auto;
+        }
+        .group-conversation {
+            height: 35rem;
+        }
+        .chat-message { max-width: 90%; }
+    }
 </style>
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-    <div>
-        <div class="d-flex align-items-center gap-3">
-            @if($group->image_path)<img src="{{ route('groups.image', $group) }}" alt="Image du groupe" class="cem-avatar cem-avatar-lg">@endif
-            <h1 class="fw-bold mb-1">{{ $group->name }}</h1>
+<div class="groups-page">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+    <div class="d-flex align-items-center gap-3">
+        @if($group->image_path)
+            <img src="{{ route('groups.image', $group) }}" alt="Image du groupe" class="cem-avatar cem-group-avatar">
+        @else
+            <span class="cem-avatar cem-group-avatar cem-avatar-placeholder">{{ strtoupper(substr($group->name, 0, 1)) }}</span>
+        @endif
+        <div>
+            <h1 class="h3 fw-bold mb-1">{{ $group->name }}</h1>
+            <p class="cem-soft mb-0 small">{{ $group->description }}</p>
         </div>
-        <p class="cem-soft mb-0">{{ $group->description }}</p>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <button type="button" class="btn btn-cem" data-bs-toggle="modal" data-bs-target="#group-info-modal">☰ Infos du groupe</button>
-        <a href="{{ route('groups.index') }}" class="btn btn-outline-secondary">Retour</a>
-        <form method="POST" action="{{ route('groups.join', $group) }}">
-            @csrf
-            <button type="submit" class="btn btn-outline-success">Rejoindre</button>
-        </form>
-        <form method="POST" action="{{ route('groups.leave', $group) }}">
-            @csrf
-            <button type="submit" class="btn btn-outline-secondary">Quitter</button>
-        </form>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+        <button type="button" class="btn btn-cem btn-sm" data-bs-toggle="modal" data-bs-target="#group-info-modal">☰ Infos du groupe</button>
+        <a href="{{ route('groups.index') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+        @if(!$group->members->contains('id', auth()->id()))
+            <form method="POST" action="{{ route('groups.join', $group) }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-success btn-sm">Rejoindre</button>
+            </form>
+        @else
+            <form method="POST" action="{{ route('groups.leave', $group) }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Quitter</button>
+            </form>
+        @endif
     </div>
 </div>
 
@@ -139,14 +340,34 @@
         </header>
         <div id="chat-messages" class="group-chat-scroll" data-messages-url="{{ route('messages.index', $group) }}" data-can-post="{{ $canPost ? '1' : '0' }}" data-current-user-id="{{ auth()->id() }}">
                 @if($canPost)
-                <form id="chat-form" method="POST" action="{{ route('messages.store', $group) }}" class="group-chat-composer">
+                <form id="chat-form" method="POST" action="{{ route('messages.store', $group) }}" class="group-chat-composer" enctype="multipart/form-data">
                     @csrf
-                    <label class="form-label">Nouveau message</label>
-                    <div id="reply-preview" class="d-none alert alert-info py-2 mb-3"><span>Réponse à <strong id="reply-user"></strong> : <span id="reply-text"></span></span><button type="button" id="cancel-reply" class="btn-close float-end"></button></div>
+                    <div id="reply-preview" class="d-none alert alert-info py-2 mb-2"><span>Réponse à <strong id="reply-user"></strong> : <span id="reply-text"></span></span><button type="button" id="cancel-reply" class="btn-close float-end"></button></div>
                     <input type="hidden" name="reply_to_id" id="reply-to-id">
-                    <textarea id="chat-content" name="content" rows="3" class="form-control mb-3" placeholder="Écrivez votre message ici..." required>{{ old('content') }}</textarea>
-                    <div id="typing-indicator" class="small cem-soft mb-3 d-none"><span class="typing-dots"><i></i><i></i><i></i></span> <span id="typing-label"></span></div>
-                    <button id="chat-submit" type="submit" class="btn btn-cem">Publier</button>
+                    <div id="typing-indicator" class="small cem-soft mb-2 d-none"><span class="typing-dots"><i></i><i></i><i></i></span> <span id="typing-label"></span></div>
+                    <div id="group-attachment-preview" class="group-attachment-preview d-none">
+                        <div id="group-attachment-thumbnail"></div>
+                        <div class="flex-grow-1 min-w-0">
+                            <strong id="group-attachment-name" class="d-block text-truncate"></strong>
+                            <span id="group-attachment-size" class="small cem-soft"></span>
+                        </div>
+                        <button type="button" id="group-attachment-remove" class="btn btn-outline-danger btn-sm">Retirer</button>
+                    </div>
+                    <div class="d-flex align-items-end gap-2">
+                        <label class="group-attach-btn mb-0" title="Ajouter une photo ou un fichier" aria-label="Joindre un fichier">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                            </svg>
+                            <input id="group-attachment-input" type="file" name="attachment" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt">
+                        </label>
+                        <textarea id="chat-content" name="content" rows="1" class="form-control chat-textarea" placeholder="Écrivez un message...">{{ old('content') }}</textarea>
+                        <button id="chat-submit" type="submit" class="whatsapp-send-btn" title="Envoyer le message" aria-label="Envoyer">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" style="margin-left: 2px;">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="small cem-soft mt-2">Photos, PDF, Word, Excel, PowerPoint, ZIP ou fichiers texte, 20 Mo maximum.</div>
                 </form>
 
                 @else
@@ -179,9 +400,26 @@
                             @endif
                         </div>
                         @if($message->replyTo)
-                            <div class="cem-reply-quote mt-3"><strong>{{ $message->replyTo->user->name }}</strong><br>{{ \Illuminate\Support\Str::limit($message->replyTo->content, 120) }}</div>
+                            <div class="cem-reply-quote mt-3"><strong>{{ $message->replyTo->user->name }}</strong><br>{{ \Illuminate\Support\Str::limit($message->replyTo->content ?: $message->replyTo->attachment_name, 120) }}</div>
                         @endif
-                        <p class="mt-3 mb-2">{{ $message->content }}</p>
+                        @if($message->content)
+                            <p class="mt-3 mb-2">{{ $message->content }}</p>
+                        @endif
+                        @if($message->attachment_path)
+                            @php($isMine = auth()->id() === $message->user_id)
+                            @if(str_starts_with((string) $message->attachment_mime, 'image/'))
+                                <a href="{{ route('messages.file', $message) }}" class="group-image-trigger mt-2" target="_blank" rel="noopener" title="Voir l'image {{ $message->attachment_name }}">
+                                    <img src="{{ route('messages.file', $message) }}" alt="{{ $message->attachment_name }}">
+                                </a>
+                                <a href="{{ route('messages.download', $message) }}" class="group-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}" download>
+                                    <span>Télécharger l'image</span>
+                                </a>
+                            @else
+                                <a href="{{ route('messages.download', $message) }}" class="group-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}" download>
+                                    <span>📎 Fichier : </span><span class="text-truncate">{{ $message->attachment_name }}</span>
+                                </a>
+                            @endif
+                        @endif
                         <div class="d-flex align-items-center gap-2 flex-wrap reaction-actions position-relative">
                             <button type="button" class="btn btn-light btn-sm reaction-trigger" data-reaction-target="reaction-picker-{{ $message->id }}" title="Ajouter une réaction">😊</button>
                             <div id="reaction-picker-{{ $message->id }}" class="btn-group btn-group-sm reaction-picker d-none" role="group">
@@ -193,7 +431,7 @@
                                 @endforeach
                             </div>
                             @if($canPost)
-                            <button type="button" class="btn btn-outline-secondary btn-sm reply-message" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->user->name }}" data-reply-content="{{ $message->content }}">Répondre</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm reply-message" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->user->name }}" data-reply-content="{{ $message->content ?: $message->attachment_name }}">Répondre</button>
                             @endif
                             @foreach($message->reactions->groupBy('reaction') as $reaction => $items)
                                 <button type="button" class="badge reaction-summary reaction-details-trigger {{ $items->contains('user_id', auth()->id()) ? 'reaction-selected' : '' }}" data-reaction-target="reaction-details-{{ $message->id }}-{{ md5($reaction) }}">{{ $reaction }} {{ $items->count() }}</button>
@@ -201,7 +439,7 @@
                                     <strong>{{ $items->count() }} réaction(s)</strong>
                                     @foreach($items as $reactionItem)
                                         <div class="d-flex align-items-center gap-2 mt-2">
-                                            @if($reactionItem->user->avatar_path)
+                                             @if($reactionItem->user->avatar_path)
                                                 <img src="{{ route('profile.avatar', $reactionItem->user) }}" alt="Photo de {{ $reactionItem->user->name }}" class="cem-avatar cem-member-avatar">
                                             @else
                                                 <span class="cem-avatar cem-member-avatar cem-avatar-placeholder">{{ strtoupper(substr($reactionItem->user->name, 0, 1)) }}</span>
@@ -429,7 +667,7 @@
         </div>
     </div>
 </div>
-@push('scripts')
+
 <script>
 (() => {
     const modal = document.querySelector('#member-profile-modal');
@@ -472,8 +710,6 @@
     });
 })();
 </script>
-@endpush
-@push('scripts')
 <script>
 (() => {
     const panelButtons = [...document.querySelectorAll('[data-group-panel]')];
@@ -522,6 +758,47 @@
 </script>
 <script>
 (() => {
+    const input = document.querySelector('#group-attachment-input');
+    const preview = document.querySelector('#group-attachment-preview');
+    const thumbnail = document.querySelector('#group-attachment-thumbnail');
+    const name = document.querySelector('#group-attachment-name');
+    const size = document.querySelector('#group-attachment-size');
+    const remove = document.querySelector('#group-attachment-remove');
+    if (!input || !preview || !thumbnail || !name || !size || !remove) return;
+
+    const formatSize = (bytes) => bytes < 1024 * 1024
+        ? `${Math.max(1, Math.round(bytes / 1024))} Ko`
+        : `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+
+    input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (!file) return;
+        name.textContent = file.name;
+        size.textContent = formatSize(file.size);
+        thumbnail.replaceChildren();
+        if (file.type.startsWith('image/')) {
+            const image = document.createElement('img');
+            image.src = URL.createObjectURL(file);
+            image.alt = 'Aperçu de ' + file.name;
+            thumbnail.append(image);
+        } else {
+            const badge = document.createElement('span');
+            badge.className = 'badge cem-badge p-3';
+            badge.textContent = 'Fichier';
+            thumbnail.append(badge);
+        }
+        preview.classList.remove('d-none');
+    });
+
+    remove.addEventListener('click', () => {
+        input.value = '';
+        thumbnail.replaceChildren();
+        preview.classList.add('d-none');
+    });
+})();
+</script>
+<script>
+(() => {
     const chat = document.querySelector('#chat-messages');
     const form = document.querySelector('#chat-form');
     const messageList = document.querySelector('#group-message-list');
@@ -529,6 +806,11 @@
     const content = document.querySelector('#chat-content');
     const submit = document.querySelector('#chat-submit');
     const status = document.querySelector('#chat-status');
+    const attachmentInput = document.querySelector('#group-attachment-input');
+    const attachmentRemove = document.querySelector('#group-attachment-remove');
+    const attachmentThumbnail = document.querySelector('#group-attachment-thumbnail');
+    const attachmentPreview = document.querySelector('#group-attachment-preview');
+
     if (!chat || !messageList) return;
     const url = chat.dataset.messagesUrl;
     const scrollToLatestMessage = (behavior = 'auto') => {
@@ -559,9 +841,6 @@
         const date = document.createElement('div');
         date.className = 'small cem-soft';
         date.textContent = message.created_at;
-        const body = document.createElement('p');
-        body.className = 'mt-3 mb-0';
-        body.textContent = message.content;
         const header = document.createElement('div');
         header.className = 'd-flex justify-content-between flex-wrap gap-2';
         const identity = document.createElement('div');
@@ -570,11 +849,57 @@
         details.append(name, meta, date);
         identity.append(avatar, details);
         header.append(identity);
+
         const quote = document.createElement('div');
         if (message.reply_to) {
             quote.className = 'cem-reply-quote mt-3';
             quote.textContent = message.reply_to.user_name + ': ' + message.reply_to.content;
         }
+        item.append(header, quote);
+
+        if (message.content) {
+            const body = document.createElement('p');
+            body.className = 'mt-3 mb-2';
+            body.textContent = message.content;
+            item.append(body);
+        }
+
+        if (message.attachment_url) {
+            const isMine = Number(message.user.id) === Number(chat.dataset.currentUserId);
+            if (message.attachment_mime && message.attachment_mime.startsWith('image/')) {
+                const imgLink = document.createElement('a');
+                imgLink.href = message.attachment_url;
+                imgLink.className = 'group-image-trigger mt-2';
+                imgLink.target = '_blank';
+                imgLink.rel = 'noopener';
+                imgLink.title = "Voir l'image " + (message.attachment_name || '');
+                const img = document.createElement('img');
+                img.src = message.attachment_url;
+                img.alt = message.attachment_name || 'Image';
+                imgLink.append(img);
+                item.append(imgLink);
+
+                const dlLink = document.createElement('a');
+                dlLink.href = message.download_url;
+                dlLink.className = 'group-attachment mt-2 text-decoration-none ' + (isMine ? 'text-white' : '');
+                dlLink.download = '';
+                dlLink.textContent = "Télécharger l'image";
+                item.append(dlLink);
+            } else {
+                const fileLink = document.createElement('a');
+                fileLink.href = message.download_url;
+                fileLink.className = 'group-attachment mt-2 text-decoration-none ' + (isMine ? 'text-white' : '');
+                fileLink.download = '';
+                const prefix = document.createElement('span');
+                prefix.textContent = '📎 Fichier : ';
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'text-truncate';
+                nameSpan.textContent = message.attachment_name || 'Fichier';
+                fileLink.append(prefix, nameSpan);
+                item.append(fileLink);
+            }
+        }
+
         const actions = document.createElement('div');
         actions.className = 'd-flex align-items-center gap-2 flex-wrap mt-2 reaction-actions position-relative';
         const trigger = document.createElement('button');
@@ -608,7 +933,7 @@
         replyButton.className = 'btn btn-outline-secondary btn-sm reply-message';
         replyButton.dataset.replyId = message.id;
         replyButton.dataset.replyUser = message.user.name;
-        replyButton.dataset.replyContent = message.content;
+        replyButton.dataset.replyContent = message.content || message.attachment_name || '';
         replyButton.textContent = 'Répondre';
         actions.append(trigger, picker);
         if (canPost) {
@@ -650,7 +975,7 @@
             actions.append(summary, detail);
         });
 
-        item.append(header, quote, body, actions);
+        item.append(actions);
         messageList.append(item);
     });
     const refresh = async () => {
@@ -665,20 +990,93 @@
             status.className = 'small text-danger';
         }
     };
-    if (form) {
-        form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (!content.value.trim()) return;
-        submit.disabled = true;
-        try {
-            const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-            if (!response.ok) throw new Error('send');
-            content.value = '';
-            await refresh();
-            scrollToLatestMessage('smooth');
-        } finally { submit.disabled = false; }
+
+    const updateSendButton = () => {
+        if (!content || !submit) return;
+        const hasText = content.value.trim().length > 0;
+        const hasFile = attachmentInput && attachmentInput.files && attachmentInput.files.length > 0;
+        if (hasText || hasFile) {
+            submit.classList.add('is-visible');
+        } else {
+            submit.classList.remove('is-visible');
+        }
+    };
+
+    const autoResize = () => {
+        if (!content) return;
+        content.style.height = 'auto';
+        const maxHeight = 130;
+        const nextHeight = Math.min(Math.max(content.scrollHeight, 42), maxHeight);
+        content.style.height = nextHeight + 'px';
+        content.style.overflowY = content.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    };
+
+    if (content) {
+        content.addEventListener('input', () => {
+            updateSendButton();
+            autoResize();
+        });
+
+        content.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                const hasText = content.value.trim().length > 0;
+                const hasFile = attachmentInput && attachmentInput.files && attachmentInput.files.length > 0;
+                if ((hasText || hasFile) && !submit.disabled) {
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
+                }
+            }
         });
     }
+
+    if (attachmentInput) {
+        attachmentInput.addEventListener('change', () => {
+            setTimeout(updateSendButton, 50);
+        });
+    }
+    if (attachmentRemove) {
+        attachmentRemove.addEventListener('click', () => {
+            setTimeout(updateSendButton, 50);
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const hasText = content && content.value.trim().length > 0;
+            const hasFile = attachmentInput && attachmentInput.files && attachmentInput.files.length > 0;
+            if (!hasText && !hasFile) return;
+            submit.disabled = true;
+            try {
+                const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                if (!response.ok) throw new Error('send');
+                content.value = '';
+                if (attachmentInput) attachmentInput.value = '';
+                if (attachmentThumbnail) attachmentThumbnail.replaceChildren();
+                if (attachmentPreview) attachmentPreview.classList.add('d-none');
+                autoResize();
+                updateSendButton();
+                const replyPreview = document.querySelector('#reply-preview');
+                const replyId = document.querySelector('#reply-to-id');
+                if (replyPreview && replyId) {
+                    replyId.value = '';
+                    replyPreview.classList.add('d-none');
+                }
+                await refresh();
+                scrollToLatestMessage('smooth');
+            } catch (err) {
+                alert("Erreur lors de l'envoi du message.");
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    }
+    updateSendButton();
+    autoResize();
     scrollToLatestMessage();
     refresh();
     window.setInterval(refresh, 2000);
@@ -722,7 +1120,6 @@
     });
 })();
 </script>
-@endpush
 
 <script>
 (() => {

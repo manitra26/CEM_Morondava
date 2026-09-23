@@ -11,7 +11,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MessageController extends Controller
 {
@@ -31,6 +34,11 @@ class MessageController extends Controller
                 'content' => $message->content,
                 'status' => $message->status,
                 'created_at' => $message->created_at?->format('d/m/Y H:i'),
+                'attachment_name' => $message->attachment_name,
+                'attachment_mime' => $message->attachment_mime,
+                'attachment_size' => $message->attachment_size,
+                'attachment_url' => $message->attachment_path ? route('messages.file', $message) : null,
+                'download_url' => $message->attachment_path ? route('messages.download', $message) : null,
                 'user' => [
                     'id' => $message->user->id,
                     'name' => $message->user->name,
@@ -90,20 +98,31 @@ class MessageController extends Controller
         $this->ensureCanPost($request, $group);
 
         $data = $request->validate([
-            'content' => ['required', 'string', 'max:4000'],
+            'content' => ['nullable', 'string', 'max:4000', 'required_without:attachment'],
             'reply_to_id' => ['nullable', 'integer', 'exists:messages,id'],
+            'attachment' => ['nullable', 'file', 'max:20480', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
         ]);
 
         if (! empty($data['reply_to_id'])) {
             abort_unless($group->messages()->whereKey($data['reply_to_id'])->exists(), 422, 'Le message cité n’appartient pas à ce groupe.');
         }
 
-        $message = $group->messages()->create([
+        $attachment = $request->file('attachment');
+        $payload = [
             'user_id' => $request->user()->id,
-            'content' => $data['content'],
+            'content' => $data['content'] ?? null,
             'reply_to_id' => $data['reply_to_id'] ?? null,
             'status' => 'active',
-        ]);
+        ];
+
+        if ($attachment) {
+            $payload['attachment_path'] = $attachment->store('group-messages');
+            $payload['attachment_name'] = $attachment->getClientOriginalName();
+            $payload['attachment_mime'] = $attachment->getMimeType();
+            $payload['attachment_size'] = $attachment->getSize();
+        }
+
+        $message = $group->messages()->create($payload);
 
         $memberIds = $group->members()->pluck('users.id')->all();
         foreach ($memberIds as $memberId) {
@@ -161,9 +180,8 @@ class MessageController extends Controller
         return back()->with('success', 'Message supprimé.');
     }
 
-    public function restore(int $messageId): RedirectResponse
+    public function restore(Message $message): RedirectResponse
     {
-        $message = Message::withTrashed()->findOrFail($messageId);
         $user = auth()->user();
         abort_unless($user->role === 'directeur' || $message->user_id === $user->id, 403);
 
@@ -171,6 +189,22 @@ class MessageController extends Controller
         $message->update(['status' => 'active']);
 
         return back()->with('success', 'Message restauré.');
+    }
+
+    public function file(Request $request, Message $message): Response|StreamedResponse
+    {
+        $this->ensureMessageMember($request, $message);
+        abort_unless($message->attachment_path && Storage::exists($message->attachment_path), 404);
+
+        return Storage::response($message->attachment_path);
+    }
+
+    public function download(Request $request, Message $message): Response|StreamedResponse
+    {
+        $this->ensureMessageMember($request, $message);
+        abort_unless($message->attachment_path && Storage::exists($message->attachment_path), 404);
+
+        return Storage::download($message->attachment_path, $message->attachment_name ?: basename($message->attachment_path), ['Content-Type' => 'application/octet-stream']);
     }
 
     private function ensureMessageMember(Request $request, Message $message): void

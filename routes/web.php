@@ -60,7 +60,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/groups/{group}/typing', [MessageController::class, 'typingStatus'])->name('messages.typing.status');
     Route::post('/messages/{message}/reactions', [MessageController::class, 'react'])->name('messages.react');
     Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
-    Route::post('/messages/{message}/restore', [MessageController::class, 'restore'])->name('messages.restore');
+    Route::post('/messages/{message}/restore', [MessageController::class, 'restore'])->withTrashed()->name('messages.restore');
+    Route::get('/messages/{message}/file', [MessageController::class, 'file'])->name('messages.file');
+    Route::get('/messages/{message}/download', [MessageController::class, 'download'])->name('messages.download');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
