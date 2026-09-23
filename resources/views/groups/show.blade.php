@@ -12,7 +12,56 @@
     .group-member { display: flex; align-items: center; gap: .75rem; padding: .8rem 1rem; border-bottom: 1px solid rgba(23,52,59,.07); }
     .group-conversation { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
     .group-chat-scroll { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow: hidden; padding: 0; }
-    #group-message-list { display: flex; flex: 1 1 auto; flex-direction: column; gap: .75rem; min-height: 0; overflow-y: auto; padding: 1.25rem; background: radial-gradient(circle at top, rgba(28,124,108,.08), transparent 45%); }
+    .group-message-list-wrapper { position: relative; flex: 1 1 auto; min-height: 0; height: 0; display: flex; flex-direction: column; }
+    #group-message-list { display: flex; flex: 1 1 auto; flex-direction: column; gap: .75rem; min-height: 0; height: 100%; overflow-y: auto; padding: 1.25rem; background: radial-gradient(circle at top, rgba(28,124,108,.08), transparent 45%); scrollbar-width: thin; }
+    .whatsapp-scroll-bottom {
+        position: absolute;
+        right: 1.5rem;
+        bottom: 1.25rem;
+        z-index: 15;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #17343b;
+        border: 1px solid rgba(23, 52, 59, 0.12);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(12px) scale(0.9);
+        transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .whatsapp-scroll-bottom:hover {
+        background: #f0fdf9;
+        color: #1c7c6c;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+        transform: translateY(0) scale(1.08);
+    }
+    .whatsapp-scroll-bottom:active {
+        transform: translateY(0) scale(0.95);
+    }
+    .whatsapp-scroll-bottom.is-visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+    }
+    html.theme-dark .whatsapp-scroll-bottom {
+        background: #203337;
+        color: #edf7f3;
+        border-color: rgba(237, 247, 243, 0.15);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    }
+    html.theme-dark .whatsapp-scroll-bottom:hover {
+        background: #283e43;
+        color: #2dd4bf;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+    }
     .chat-message { width: fit-content; max-width: min(78%, 42rem); margin: 0; padding: .85rem 1rem; border: 0; border-radius: 1rem; box-shadow: 0 5px 14px rgba(23,52,59,.08); }
     .chat-message.mine { align-self: flex-end; color: white; background: linear-gradient(135deg, #1c7c6c, #165e54) !important; border-bottom-right-radius: .25rem; }
     .chat-message.theirs { align-self: flex-start; color: #17343b; background: white !important; border-bottom-left-radius: .25rem; }
@@ -104,7 +153,8 @@
                     <div class="alert alert-info group-chat-read-only">Mode lecture seule : seuls les administrateurs et les membres autorisés peuvent publier dans ce groupe.</div>
                 @endif
 
-                <div id="group-message-list">
+                <div class="group-message-list-wrapper">
+                    <div id="group-message-list">
                 @forelse ($messages as $message)
                     <div class="chat-message {{ auth()->id() === $message->user_id ? 'mine' : 'theirs' }}" data-message-id="{{ $message->id }}">
                         <div class="d-flex justify-content-between flex-wrap gap-2">
@@ -167,6 +217,12 @@
                 @empty
                     <div class="text-center cem-soft py-4">Aucun message dans ce groupe.</div>
                 @endforelse
+                    </div>
+                    <button type="button" class="whatsapp-scroll-bottom" id="group-scroll-bottom" aria-label="Faire défiler vers le bas" title="Faire défiler vers le bas">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </button>
                 </div>
         </div>
     </section>
@@ -688,8 +744,44 @@
         if (!response.ok) return;
         const users = (await response.json()).users;
         indicator.classList.toggle('d-none', users.length === 0);
-        label.textContent = users.length ? users.map((user) => user.name).join(', ') + (users.length === 1 ? ' est en train d'écrire...' : ' sont en train d'écrire...') : '';
+        label.textContent = users.length ? users.map((user) => user.name).join(', ') + (users.length === 1 ? ' est en train d\'écrire...' : ' sont en train d\'écrire...') : '';
     }, 2000);
+})();
+</script>
+<script>
+(() => {
+    const messageList = document.querySelector('#group-message-list');
+    const scrollBottomBtn = document.querySelector('#group-scroll-bottom');
+    if (!messageList || !scrollBottomBtn) return;
+
+    const scrollToBottom = (behavior = 'auto') => {
+        messageList.scrollTo({
+            top: messageList.scrollHeight,
+            behavior: behavior
+        });
+    };
+
+    const updateScrollButton = () => {
+        const distanceToBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight;
+        if (distanceToBottom > 80) {
+            scrollBottomBtn.classList.add('is-visible');
+        } else {
+            scrollBottomBtn.classList.remove('is-visible');
+        }
+    };
+
+    messageList.addEventListener('scroll', updateScrollButton, { passive: true });
+
+    scrollBottomBtn.addEventListener('click', () => {
+        scrollToBottom('smooth');
+    });
+
+    scrollToBottom('auto');
+    updateScrollButton();
+    window.addEventListener('load', () => {
+        scrollToBottom('auto');
+        updateScrollButton();
+    });
 })();
 </script>
 @endsection

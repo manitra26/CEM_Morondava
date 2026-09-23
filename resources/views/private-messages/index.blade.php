@@ -11,7 +11,56 @@
     .private-contact { display: flex; gap: .75rem; align-items: center; padding: .8rem 1rem; color: inherit; text-decoration: none; border-bottom: 1px solid rgba(23,52,59,.07); }
     .private-contact:hover, .private-contact.active { background: rgba(28,124,108,.1); }
     .private-conversation { min-width: 0; min-height: 0; height: 100%; display: flex; flex-direction: column; }
-    .private-conversation-body { min-height: 0; height: 0; flex: 1 1 auto; overflow-y: auto; padding: 1.25rem; background: radial-gradient(circle at top, rgba(28,124,108,.08), transparent 45%); }
+    .private-conversation-body-wrapper { position: relative; flex: 1 1 auto; min-height: 0; height: 0; display: flex; flex-direction: column; }
+    .private-conversation-body { min-height: 0; height: 100%; flex: 1 1 auto; overflow-y: auto; padding: 1.25rem; background: radial-gradient(circle at top, rgba(28,124,108,.08), transparent 45%); scrollbar-width: thin; }
+    .whatsapp-scroll-bottom {
+        position: absolute;
+        right: 1.5rem;
+        bottom: 1.25rem;
+        z-index: 15;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #17343b;
+        border: 1px solid rgba(23, 52, 59, 0.12);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(12px) scale(0.9);
+        transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .whatsapp-scroll-bottom:hover {
+        background: #f0fdf9;
+        color: #1c7c6c;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+        transform: translateY(0) scale(1.08);
+    }
+    .whatsapp-scroll-bottom:active {
+        transform: translateY(0) scale(0.95);
+    }
+    .whatsapp-scroll-bottom.is-visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+    }
+    html.theme-dark .whatsapp-scroll-bottom {
+        background: #203337;
+        color: #edf7f3;
+        border-color: rgba(237, 247, 243, 0.15);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    }
+    html.theme-dark .whatsapp-scroll-bottom:hover {
+        background: #283e43;
+        color: #2dd4bf;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+    }
     .private-bubble { max-width: min(75%, 42rem); padding: .7rem .9rem; border-radius: 1rem; box-shadow: 0 5px 14px rgba(23,52,59,.08); }
     .private-bubble.mine { margin-left: auto; color: white; background: linear-gradient(135deg, #1c7c6c, #165e54); border-bottom-right-radius: .25rem; }
     .private-bubble.theirs { background: white; border-bottom-left-radius: .25rem; }
@@ -77,7 +126,8 @@
                         <div class="small cem-soft">{{ $user->position ?: ucfirst($user->role) }}{{ $user->phone ? ' - '.$user->formatted_phone : '' }}</div>
                     </div>
                 </header>
-                <div class="private-conversation-body" id="private-message-list">
+                <div class="private-conversation-body-wrapper">
+                    <div class="private-conversation-body" id="private-message-list">
                     @foreach($messages as $message)
                         @php($isMine = $message->sender_id === auth()->id())
                         @php($reactionGroups = $message->reactions->groupBy('reaction'))
@@ -140,6 +190,12 @@
                             </div>
                         </div>
                     @endforeach
+                    </div>
+                    <button type="button" class="whatsapp-scroll-bottom" id="private-scroll-bottom" aria-label="Faire défiler vers le bas" title="Faire défiler vers le bas">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </button>
                 </div>
                 <form id="private-message-form" method="POST" action="{{ route('private.messages.store', $user) }}" enctype="multipart/form-data" class="private-composer p-3">
                     @csrf
@@ -293,5 +349,103 @@
     });
 })();
 </script>
-<script>(() => { const form = document.querySelector('#private-message-form'); const messageList = document.querySelector('#private-message-list'); const error = document.querySelector('#private-message-error'); const attachmentPreview = document.querySelector('#private-attachment-preview'); const attachmentThumbnail = document.querySelector('#private-attachment-thumbnail'); const replyId = document.querySelector('#private-reply-to-id'); const replyPreview = document.querySelector('#private-reply-preview'); const submit = form?.querySelector('button[type="submit"]'); if (!form || !messageList || !error || !submit) return; document.addEventListener('click', (event) => { const button = event.target.closest('.private-reply-button'); if (!button) return; replyId.value = button.dataset.replyId; document.querySelector('#private-reply-user').textContent = button.dataset.replyUser; document.querySelector('#private-reply-text').textContent = button.dataset.replyContent; replyPreview.classList.remove('d-none'); form.querySelector('textarea[name="content"]')?.focus(); }); form.addEventListener('submit', async (event) => { event.preventDefault(); error.classList.add('d-none'); submit.disabled = true; try { const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' }); if (!response.ok) { const data = await response.json(); error.textContent = Object.values(data.errors || {}).flat().join(' ') || 'Le message n a pas pu etre envoye.'; error.classList.remove('d-none'); return; } const page = new DOMParser().parseFromString(await response.text(), 'text/html'); const updatedMessageList = page.querySelector('#private-message-list'); if (!updatedMessageList) throw new Error('conversation'); messageList.replaceChildren(...updatedMessageList.children); form.reset(); replyId.value = ''; replyPreview.classList.add('d-none'); attachmentThumbnail?.replaceChildren(); attachmentPreview?.classList.add('d-none'); messageList.scrollTo({ top: messageList.scrollHeight, behavior: 'smooth' }); } catch (exception) { error.textContent = 'Le message n a pas pu etre envoye. Reessayez.'; error.classList.remove('d-none'); } finally { submit.disabled = false; } }); })();</script>
+<script>
+(() => {
+    const form = document.querySelector('#private-message-form');
+    const messageList = document.querySelector('#private-message-list');
+    const scrollBottomBtn = document.querySelector('#private-scroll-bottom');
+    const error = document.querySelector('#private-message-error');
+    const attachmentPreview = document.querySelector('#private-attachment-preview');
+    const attachmentThumbnail = document.querySelector('#private-attachment-thumbnail');
+    const replyId = document.querySelector('#private-reply-to-id');
+    const replyPreview = document.querySelector('#private-reply-preview');
+    const submit = form?.querySelector('button[type="submit"]');
+
+    if (!messageList) return;
+
+    const scrollToBottom = (behavior = 'auto') => {
+        messageList.scrollTo({
+            top: messageList.scrollHeight,
+            behavior: behavior
+        });
+    };
+
+    const updateScrollButton = () => {
+        if (!scrollBottomBtn) return;
+        const distanceToBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight;
+        if (distanceToBottom > 80) {
+            scrollBottomBtn.classList.add('is-visible');
+        } else {
+            scrollBottomBtn.classList.remove('is-visible');
+        }
+    };
+
+    messageList.addEventListener('scroll', updateScrollButton, { passive: true });
+
+    if (scrollBottomBtn) {
+        scrollBottomBtn.addEventListener('click', () => {
+            scrollToBottom('smooth');
+        });
+    }
+
+    scrollToBottom('auto');
+    updateScrollButton();
+    window.addEventListener('load', () => {
+        scrollToBottom('auto');
+        updateScrollButton();
+    });
+
+    if (!form || !error || !submit) return;
+
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('.private-reply-button');
+        if (!button) return;
+        replyId.value = button.dataset.replyId;
+        document.querySelector('#private-reply-user').textContent = button.dataset.replyUser;
+        document.querySelector('#private-reply-text').textContent = button.dataset.replyContent;
+        replyPreview.classList.remove('d-none');
+        form.querySelector('textarea[name="content"]')?.focus();
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        error.classList.add('d-none');
+        submit.disabled = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                error.textContent = Object.values(data.errors || {}).flat().join(' ') || "Le message n'a pas pu être envoyé.";
+                error.classList.remove('d-none');
+                return;
+            }
+
+            const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const updatedMessageList = page.querySelector('#private-message-list');
+            if (!updatedMessageList) throw new Error('conversation');
+
+            messageList.replaceChildren(...updatedMessageList.children);
+            form.reset();
+            replyId.value = '';
+            replyPreview.classList.add('d-none');
+            attachmentThumbnail?.replaceChildren();
+            attachmentPreview?.classList.add('d-none');
+            scrollToBottom('smooth');
+            setTimeout(updateScrollButton, 200);
+        } catch (exception) {
+            error.textContent = "Le message n'a pas pu être envoyé. Réessayez.";
+            error.classList.remove('d-none');
+        } finally {
+            submit.disabled = false;
+        }
+    });
+})();
+</script>
 @endsection
