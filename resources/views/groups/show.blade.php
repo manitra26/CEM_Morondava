@@ -55,7 +55,7 @@
         <div class="px-3 py-2 small cem-soft">{{ $group->members->count() }} membre(s) dans ce groupe</div>
         <div class="group-members-list">
             @foreach($group->members as $member)
-                <button type="button" class="group-member group-member-profile-button member-profile-trigger" data-member-name="{{ $member->name }}" data-member-role="{{ ucfirst($member->role) }}" data-member-position="{{ $member->position }}" data-member-department="{{ $member->department }}" data-member-domicile="{{ $member->domicile }}" data-member-phone="{{ $member->phone }}" data-member-email="{{ $member->email }}" data-member-bio="{{ $member->bio }}" data-member-avatar="{{ $member->avatar_path ? route('profile.avatar', $member) : '' }}" data-member-initial="{{ strtoupper(substr($member->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $member) }}" data-member-is-current="{{ $member->id === auth()->id() ? '1' : '0' }}">
+                <button type="button" class="group-member group-member-profile-button member-profile-trigger" data-member-name="{{ $member->name }}" data-member-role="{{ ucfirst($member->role) }}" data-member-position="{{ $member->position }}" data-member-department="{{ $member->department }}" data-member-domicile="{{ $member->domicile }}" data-member-phone="{{ $member->formatted_phone }}" data-member-email="{{ $member->email }}" data-member-bio="{{ $member->bio }}" data-member-avatar="{{ $member->avatar_path ? route('profile.avatar', $member) : '' }}" data-member-initial="{{ strtoupper(substr($member->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $member) }}" data-member-is-current="{{ $member->id === auth()->id() ? '1' : '0' }}">
                     @if($member->avatar_path)
                         <img src="{{ route('profile.avatar', $member) }}" alt="Photo de {{ $member->name }}" class="cem-avatar">
                     @else
@@ -173,7 +173,7 @@
 </div>
 
 <div class="modal fade" id="member-profile-modal" tabindex="-1" aria-labelledby="member-profile-modal-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered cem-profile-modal-dialog">
         <div class="modal-content cem-card">
             <div class="modal-header cem-card-header">
                 <h2 class="modal-title h5 mb-0" id="member-profile-modal-title">Profil du membre</h2>
@@ -191,10 +191,50 @@
                 </div>
                 <p id="member-profile-bio" class="mb-3"></p>
                 <div class="row g-2">
-                    <div class="col-6"><div class="cem-info-box"><span>Département</span><strong id="member-profile-department"></strong></div></div>
-                    <div class="col-6"><div class="cem-info-box"><span>Domicile</span><strong id="member-profile-domicile"></strong></div></div>
-                    <div class="col-6"><div class="cem-info-box"><span>Téléphone</span><strong id="member-profile-phone"></strong></div></div>
-                    <div class="col-6"><div class="cem-info-box"><span>Email</span><strong id="member-profile-email" class="text-break"></strong></div></div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+                                </span>
+                                <span>Département</span>
+                            </div>
+                            <strong id="member-profile-department"></strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </span>
+                                <span>Domicile</span>
+                            </div>
+                            <strong id="member-profile-domicile"></strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                </span>
+                                <span>Téléphone</span>
+                            </div>
+                            <strong id="member-profile-phone"></strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                </span>
+                                <span>Email</span>
+                            </div>
+                            <strong id="member-profile-email" class="cem-info-box-email"></strong>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -235,9 +275,9 @@
                                             <span class="cem-avatar cem-member-avatar cem-avatar-placeholder">{{ strtoupper(substr($member->name, 0, 1)) }}</span>
                                         @endif
                                         <div class="flex-grow-1">
-                                            <a href="{{ route('profile.show', $member) }}" class="text-decoration-none fw-semibold member-profile-trigger" data-member-name="{{ $member->name }}" data-member-role="{{ ucfirst($member->role) }}" data-member-position="{{ $member->position }}" data-member-department="{{ $member->department }}" data-member-domicile="{{ $member->domicile }}" data-member-phone="{{ $member->phone }}" data-member-email="{{ $member->email }}" data-member-bio="{{ $member->bio }}" data-member-avatar="{{ $member->avatar_path ? route('profile.avatar', $member) : '' }}" data-member-initial="{{ strtoupper(substr($member->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $member) }}" data-member-is-current="{{ $member->id === auth()->id() ? '1' : '0' }}">{{ $member->name }}</a>
+                                            <a href="{{ route('profile.show', $member) }}" class="text-decoration-none fw-semibold member-profile-trigger" data-member-name="{{ $member->name }}" data-member-role="{{ ucfirst($member->role) }}" data-member-position="{{ $member->position }}" data-member-department="{{ $member->department }}" data-member-domicile="{{ $member->domicile }}" data-member-phone="{{ $member->formatted_phone }}" data-member-email="{{ $member->email }}" data-member-bio="{{ $member->bio }}" data-member-avatar="{{ $member->avatar_path ? route('profile.avatar', $member) : '' }}" data-member-initial="{{ strtoupper(substr($member->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $member) }}" data-member-is-current="{{ $member->id === auth()->id() ? '1' : '0' }}">{{ $member->name }}</a>
                                             <div class="cem-user-meta text-capitalize">{{ $member->role }}{{ $member->position ? ' - '.$member->position : '' }}</div>
-                                            @if($member->phone)<div class="small cem-soft">{{ $member->phone }}</div>@endif
+                                            @if($member->phone)<div class="small cem-soft">{{ $member->formatted_phone }}</div>@endif
                                         </div>
                                         @if($isDirector && $member->id !== auth()->id())
                                             <form method="POST" action="{{ route('groups.members.update', $group) }}" onsubmit="return confirm('Exclure ce membre du groupe ?')">
@@ -294,7 +334,7 @@
                                         @endif
                                         <div class="flex-grow-1">
                                             <strong>{{ $managedUser->name }}</strong>
-                                            <div class="small cem-soft">{{ $managedUser->phone ?: 'Téléphone non renseigné' }}</div>
+                                            <div class="small cem-soft">{{ $managedUser->formatted_phone ?: 'Téléphone non renseigné' }}</div>
                                         </div>
                                         @if($isMember)
                                             @php($memberRecord = $group->members->firstWhere('id', $managedUser->id))
@@ -361,8 +401,9 @@
             bio.textContent = member.memberBio || 'Aucune biographie renseignée.';
             department.textContent = member.memberDepartment || 'Non renseigné';
             domicile.textContent = member.memberDomicile || 'Non renseigné';
-            phone.textContent = member.memberPhone || 'Non renseigné';
+            phone.textContent = (window.formatMadagascarPhone ? window.formatMadagascarPhone(member.memberPhone) : member.memberPhone) || 'Non renseigné';
             email.textContent = member.memberEmail || 'Non renseigné';
+            email.title = member.memberEmail || '';
             initial.textContent = member.memberInitial;
             initial.classList.toggle('d-none', Boolean(member.memberAvatar));
             avatar.classList.toggle('d-none', !member.memberAvatar);

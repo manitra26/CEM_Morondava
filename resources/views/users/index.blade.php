@@ -56,7 +56,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="phone-{{ $user->id }}">T&eacute;l&eacute;phone</label>
-                            <input id="phone-{{ $user->id }}" type="text" name="phone" class="form-control" value="{{ $user->phone }}">
+                            <input id="phone-{{ $user->id }}" type="tel" name="phone" class="form-control" value="{{ $user->phone }}" placeholder="032 67 432 72" maxlength="13" inputmode="numeric" data-phone-input>
                         </div>
                         <div class="col-md-8">
                             <label class="form-label" for="bio-{{ $user->id }}">Bio</label>
@@ -147,7 +147,7 @@
                         <div class="col-md-4"><label class="form-label" for="create-role">R&ocirc;le</label><select id="create-role" name="role" class="form-select" required><option value="employe" @selected(old('role', 'employe') === 'employe')>Employ&eacute;</option><option value="directeur" @selected(old('role') === 'directeur')>Directeur</option></select></div>
                         <div class="col-md-4"><label class="form-label" for="create-position">Poste</label><input id="create-position" type="text" name="position" class="form-control" value="{{ old('position') }}"></div>
                         <div class="col-md-4"><label class="form-label" for="create-department">D&eacute;partement</label><input id="create-department" type="text" name="department" class="form-control" value="{{ old('department') }}"></div>
-                        <div class="col-md-6"><label class="form-label" for="create-phone">T&eacute;l&eacute;phone</label><input id="create-phone" type="text" name="phone" class="form-control" value="{{ old('phone') }}"></div>
+                        <div class="col-md-6"><label class="form-label" for="create-phone">T&eacute;l&eacute;phone</label><input id="create-phone" type="tel" name="phone" class="form-control" value="{{ old('phone') }}" placeholder="032 67 432 72" maxlength="13" inputmode="numeric" data-phone-input></div>
                         <div class="col-md-6"><label class="form-label" for="create-bio">Bio</label><input id="create-bio" type="text" name="bio" class="form-control" value="{{ old('bio') }}"></div>
                     </div>
                 </div>

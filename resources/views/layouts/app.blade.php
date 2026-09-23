@@ -82,8 +82,14 @@
         .cem-avatar-lg { width: 7rem; height: 7rem; border: .35rem solid white; box-shadow: 0 8px 20px rgba(0,0,0,.15); }
         .cem-avatar-placeholder { display: grid; place-items: center; background: linear-gradient(135deg, #1c7c6c, #d87c4d); color: white; font-size: 2.5rem; font-weight: 700; }
         .cem-profile-cover { height: 9rem; background: linear-gradient(135deg, #10363a, #1c7c6c 55%, #d87c4d); }
-        .cem-info-box { display: flex; flex-direction: column; gap: .25rem; padding: 1rem; border-radius: 1rem; background: rgba(28,124,108,.07); }
-        .cem-info-box span { color: rgba(23,52,59,.65); font-size: .85rem; }
+        .cem-profile-modal-dialog { max-width: 545px; }
+        .cem-info-box { display: flex; flex-direction: column; gap: .35rem; padding: .85rem .9rem; border-radius: 1rem; background: rgba(28,124,108,.07); border: 1px solid rgba(28,124,108,.08); transition: all .2s ease; min-width: 0; }
+        .cem-info-box:hover { background: rgba(28,124,108,.1); }
+        .cem-info-box-header { display: flex; align-items: center; gap: .45rem; color: rgba(23,52,59,.72); font-size: .83rem; font-weight: 500; }
+        .cem-info-box-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border-radius: .4rem; background: rgba(28,124,108,.14); color: #1c7c6c; flex-shrink: 0; }
+        .cem-info-box-icon svg { width: .82rem; height: .82rem; }
+        .cem-info-box strong { font-size: .95rem; font-weight: 600; color: #17343b; }
+        .cem-info-box-email { font-size: .84rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
         .typing-dots { display: inline-flex; gap: .2rem; align-items: center; }
         .typing-dots i { width: .35rem; height: .35rem; border-radius: 50%; background: currentColor; animation: cem-bounce 1s infinite ease-in-out; }
         .typing-dots i:nth-child(2) { animation-delay: .15s; }
@@ -91,10 +97,13 @@
         @keyframes cem-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-.25rem); opacity: 1; } }
         html.theme-dark body { background: #142427; color: #edf7f3; }
         html.theme-dark .cem-card, html.theme-dark .bg-white { background: #203337 !important; color: #edf7f3; }
-        html.theme-dark .cem-soft, html.theme-dark .cem-info-box span { color: rgba(237,247,243,.68); }
+        html.theme-dark .cem-soft, html.theme-dark .cem-info-box-header, html.theme-dark .cem-info-box span { color: rgba(237,247,243,.7); }
         html.theme-dark .form-control, html.theme-dark .form-select { background: #172a2d; border-color: #476165; color: #edf7f3; }
         html.theme-dark .list-group-item { background: transparent; color: #edf7f3; border-color: rgba(237,247,243,.12); }
-        html.theme-dark .cem-info-box { background: rgba(255,255,255,.08); }
+        html.theme-dark .cem-info-box { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+        html.theme-dark .cem-info-box:hover { background: rgba(255,255,255,.09); }
+        html.theme-dark .cem-info-box-icon { background: rgba(45,212,191,.15); color: #2dd4bf; }
+        html.theme-dark .cem-info-box strong { color: #edf7f3; }
         html.theme-dark .btn-outline-secondary { color: #edf7f3; border-color: #9ab0ad; }
         .cem-avatar-nav { width: 2.75rem; height: 2.75rem; border: 2px solid rgba(255,255,255,.8); font-size: 1.1rem; }
         .cem-avatar-message { width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; }
@@ -268,6 +277,41 @@
             display: grid;
             place-items: center;
         }
+        .cem-input-icon-wrapper {
+            position: relative;
+        }
+        .cem-input-icon {
+            position: absolute;
+            top: 50%;
+            left: 0.85rem;
+            transform: translateY(-50%);
+            color: #1c7c6c;
+            opacity: 0.75;
+            pointer-events: none;
+            display: grid;
+            place-items: center;
+            width: 1.25rem;
+            height: 1.25rem;
+            z-index: 3;
+            transition: color .2s ease, opacity .2s ease;
+        }
+        .cem-input-icon svg {
+            width: 1.15rem;
+            height: 1.15rem;
+        }
+        .cem-input-icon-wrapper:focus-within .cem-input-icon {
+            color: #0d6e8a;
+            opacity: 1;
+        }
+        .cem-input-with-icon {
+            padding-left: 2.65rem !important;
+        }
+        html.theme-dark .cem-input-icon {
+            color: #2dd4bf;
+        }
+        html.theme-dark .cem-input-icon-wrapper:focus-within .cem-input-icon {
+            color: #5eead4;
+        }
     </style>
 </head>
 <body>
@@ -332,7 +376,7 @@
 </main>
 
 <div class="modal fade" id="header-profile-modal" tabindex="-1" aria-labelledby="header-profile-modal-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered cem-profile-modal-dialog">
         <div class="modal-content cem-card">
             <div class="modal-header cem-card-header">
                 <h2 class="modal-title h5 mb-0" id="header-profile-modal-title">Mon profil</h2>
@@ -353,10 +397,50 @@
                 </div>
                 <p class="mb-3">{{ auth()->user()->bio ?: 'Aucune biographie renseignée.' }}</p>
                 <div class="row g-2">
-                    <div class="col-6"><div class="cem-info-box"><span>Département</span><strong>{{ auth()->user()->department ?: 'Non renseigné' }}</strong></div></div>
-                    <div class="col-6"><div class="cem-info-box"><span>Domicile</span><strong>{{ auth()->user()->domicile ?: 'Non renseigné' }}</strong></div></div>
-                    <div class="col-6"><div class="cem-info-box"><span>Téléphone</span><strong>{{ auth()->user()->phone ?: 'Non renseigné' }}</strong></div></div>
-                    <div class="col-6"><div class="cem-info-box"><span>Email</span><strong class="text-break">{{ auth()->user()->email }}</strong></div></div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+                                </span>
+                                <span>Département</span>
+                            </div>
+                            <strong>{{ auth()->user()->department ?: 'Non renseigné' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </span>
+                                <span>Domicile</span>
+                            </div>
+                            <strong>{{ auth()->user()->domicile ?: 'Non renseigné' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                </span>
+                                <span>Téléphone</span>
+                            </div>
+                            <strong>{{ auth()->user()->formatted_phone ?: 'Non renseigné' }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="cem-info-box">
+                            <div class="cem-info-box-header">
+                                <span class="cem-info-box-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                </span>
+                                <span>Email</span>
+                            </div>
+                            <strong class="cem-info-box-email" title="{{ auth()->user()->email }}">{{ auth()->user()->email }}</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -405,6 +489,72 @@
         button.setAttribute('aria-label', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
         button.setAttribute('title', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
     });
+</script>
+<script>
+    (() => {
+        function formatMadagascarPhone(raw) {
+            if (!raw) return '';
+            let digits = String(raw).replace(/\D/g, '');
+            if (digits.startsWith('261')) {
+                digits = '0' + digits.slice(3);
+            }
+            if (digits.length > 10) {
+                digits = digits.slice(0, 10);
+            }
+            let parts = [];
+            if (digits.length > 0) parts.push(digits.slice(0, 3));
+            if (digits.length > 3) parts.push(digits.slice(3, 5));
+            if (digits.length > 5) parts.push(digits.slice(5, 8));
+            if (digits.length > 8) parts.push(digits.slice(8, 10));
+            return parts.join(' ');
+        }
+
+        window.formatMadagascarPhone = formatMadagascarPhone;
+
+        function initPhoneInputs() {
+            document.querySelectorAll('[data-phone-input], input[name="phone"]').forEach(function (input) {
+                if (input.dataset.phoneMaskInitialized) return;
+                input.dataset.phoneMaskInitialized = 'true';
+
+                input.value = formatMadagascarPhone(input.value);
+
+                input.addEventListener('input', function () {
+                    const cursor = input.selectionStart;
+                    const oldVal = input.value;
+                    const formatted = formatMadagascarPhone(oldVal);
+                    input.value = formatted;
+
+                    if (cursor === oldVal.length) {
+                        input.setSelectionRange(formatted.length, formatted.length);
+                    } else {
+                        const digitsBeforeCursor = oldVal.slice(0, cursor).replace(/\D/g, '').length;
+                        let newCursor = 0;
+                        let digitCount = 0;
+                        for (let i = 0; i < formatted.length; i++) {
+                            if (/\d/.test(formatted[i])) {
+                                digitCount++;
+                            }
+                            newCursor = i + 1;
+                            if (digitCount >= digitsBeforeCursor) {
+                                break;
+                            }
+                        }
+                        input.setSelectionRange(newCursor, newCursor);
+                    }
+                });
+
+                input.addEventListener('blur', function () {
+                    input.value = formatMadagascarPhone(input.value);
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPhoneInputs);
+        } else {
+            initPhoneInputs();
+        }
+    })();
 </script>
 </body>
 </html>

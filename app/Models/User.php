@@ -73,4 +73,40 @@ class User extends Authenticatable
     {
         return $this->hasMany(InternalNotification::class);
     }
+
+    public function getFormattedPhoneAttribute(): string
+    {
+        return self::formatPhone($this->phone);
+    }
+
+    public static function formatPhone(?string $phone): string
+    {
+        if (! $phone) {
+            return '';
+        }
+
+        $digits = preg_replace('/\D/', '', $phone);
+        if (str_starts_with($digits, '261')) {
+            $digits = '0'.substr($digits, 3);
+        }
+        if (strlen($digits) > 10) {
+            $digits = substr($digits, 0, 10);
+        }
+
+        $parts = [];
+        if (strlen($digits) > 0) {
+            $parts[] = substr($digits, 0, 3);
+        }
+        if (strlen($digits) > 3) {
+            $parts[] = substr($digits, 3, 2);
+        }
+        if (strlen($digits) > 5) {
+            $parts[] = substr($digits, 5, 3);
+        }
+        if (strlen($digits) > 8) {
+            $parts[] = substr($digits, 8, 2);
+        }
+
+        return implode(' ', $parts);
+    }
 }

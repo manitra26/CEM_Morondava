@@ -55,7 +55,7 @@
                         @endif
                         <span class="flex-grow-1 min-w-0">
                             <strong class="d-block text-truncate">{{ $contact->name }}</strong>
-                            <span class="small cem-soft text-truncate d-block">{{ $contact->position ?: ucfirst($contact->role) }}{{ $contact->phone ? ' - '.$contact->phone : '' }}</span>
+                            <span class="small cem-soft text-truncate d-block">{{ $contact->position ?: ucfirst($contact->role) }}{{ $contact->phone ? ' - '.$contact->formatted_phone : '' }}</span>
                         </span>
                     </a>
                 @empty
@@ -74,7 +74,7 @@
                     @endif
                     <div>
                         <h2 class="h5 mb-1">{{ $user->name }}</h2>
-                        <div class="small cem-soft">{{ $user->position ?: ucfirst($user->role) }}{{ $user->phone ? ' - '.$user->phone : '' }}</div>
+                        <div class="small cem-soft">{{ $user->position ?: ucfirst($user->role) }}{{ $user->phone ? ' - '.$user->formatted_phone : '' }}</div>
                     </div>
                 </header>
                 <div class="private-conversation-body" id="private-message-list">
