@@ -99,4 +99,22 @@ class PrivateMessageDeletionTest extends TestCase
 
         $this->assertNotNull($message->fresh()->read_at);
     }
+
+    public function test_private_messages_show_unread_badge_for_new_messages(): void
+    {
+        $sender = User::factory()->create();
+        $recipient = User::factory()->create();
+
+        PrivateMessage::create([
+            'sender_id' => $sender->id,
+            'recipient_id' => $recipient->id,
+            'content' => 'Nouveau message non lu',
+            'read_at' => null,
+        ]);
+
+        $this->actingAs($recipient)
+            ->get(route('private.messages.index'))
+            ->assertSee('unread-badge')
+            ->assertSee('1');
+    }
 }

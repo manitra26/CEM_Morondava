@@ -327,6 +327,22 @@
             transition: opacity 0.2s ease;
         }
         .user-status-indicator.offline { opacity: 0; }
+        .nav-message-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.4rem;
+            height: 1.4rem;
+            padding: 0 .35rem;
+            border-radius: 999px;
+            background: #f26d6d;
+            color: #fff;
+            font-size: .68rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-left: auto;
+            box-shadow: 0 4px 10px rgba(242, 109, 109, 0.35);
+        }
     </style>
 </head>
 <body>
@@ -346,7 +362,7 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}" data-nav-label="Tableau de bord" href="{{ route('dashboard') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg></span><span class="cem-nav-label">Tableau de bord</span></a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('reports.*') ? 'is-active' : '' }}" data-nav-label="Rapports" href="{{ route('reports.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><span class="cem-nav-label">Rapports</span></a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('groups.*') ? 'is-active' : '' }}" data-nav-label="Discussions" href="{{ route('groups.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-4.2-1L3 20l1.5-4.1A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg></span><span class="cem-nav-label">Discussions</span></a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('private.messages.*') ? 'is-active' : '' }}" data-nav-label="Messages" href="{{ route('private.messages.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span class="cem-nav-label">Messages</span></a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('private.messages.*') ? 'is-active' : '' }}" data-nav-label="Messages" href="{{ route('private.messages.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span class="cem-nav-label">Messages</span>@php($privateUnreadCount = \App\Models\PrivateMessage::where('recipient_id', auth()->id())->whereNull('read_at')->count())@php($privateUnreadLabel = $privateUnreadCount > 9 ? '9+' : $privateUnreadCount)@if($privateUnreadCount > 0)<span class="nav-message-count" aria-label="{{ $privateUnreadCount }} nouveau(x) message(s)">{{ $privateUnreadLabel }}</span>@endif</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('notifications.*') ? 'is-active' : '' }}" data-nav-label="Notifications" href="{{ route('notifications.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><span class="cem-nav-label">Notifications</span></a></li>
                 @if(auth()->user()->isDirector())
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('users.*') ? 'is-active' : '' }}" data-nav-label="Utilisateurs" href="{{ route('users.index') }}"><span class="cem-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M17 11a4 4 0 0 0 0-8M21 21v-2a4 4 0 0 0-3-3.87"/></svg></span><span class="cem-nav-label">Utilisateurs</span></a></li>

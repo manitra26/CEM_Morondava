@@ -174,6 +174,22 @@
     .private-status-row .message-status { letter-spacing: .02em; }
     .private-status-row .message-status.sent { color: rgba(255,255,255,.72); }
     .private-status-row .message-status.read { color: #d7f7ef; }
+    .unread-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.3rem;
+        height: 1.3rem;
+        padding: 0 .35rem;
+        margin-left: auto;
+        border-radius: 999px;
+        background: #f26d6d;
+        color: #fff;
+        font-size: .7rem;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: 0 4px 10px rgba(242, 109, 109, 0.35);
+    }
     @media (max-width: 767.98px) { .private-messages-card { height: auto; min-height: 0; display: block; } .private-contacts { width: 100%; max-height: 18rem; border-right: 0; border-bottom: 1px solid rgba(23,52,59,.1); } .private-conversation { height: 32rem; min-height: 32rem; } .private-bubble { max-width: 88%; } }
     .private-image-trigger { display: block; border: 0; padding: 0; margin: 0; background: transparent; cursor: zoom-in; }
     .private-bubble.mine .private-reply-button { color: #fff; font-weight: 600; text-decoration: underline; }
@@ -204,6 +220,7 @@
             <div class="px-3 py-2 small cem-soft">{{ $users->count() }} membre(s)</div>
             <div class="private-contact-list">
                 @forelse($users as $contact)
+                    @php($unreadCount = \App\Models\PrivateMessage::where('sender_id', $contact->id)->where('recipient_id', auth()->id())->whereNull('read_at')->count())
                     <a href="{{ route('private.messages.user', $contact) }}" class="private-contact {{ $user?->is($contact) ? 'active' : '' }}">
                         <span class="avatar-status-wrap">
                             @if($contact->avatar_path)
@@ -213,9 +230,14 @@
                             @endif
                             <span class="user-status-indicator {{ $contact->isOnline() ? 'online' : 'offline' }}" title="{{ $contact->isOnline() ? 'En ligne' : 'Hors ligne' }}" aria-label="{{ $contact->isOnline() ? 'En ligne' : 'Hors ligne' }}"></span>
                         </span>
-                        <span class="flex-grow-1 min-w-0">
-                            <strong class="d-block text-truncate">{{ $contact->name }}</strong>
-                            <span class="small cem-soft text-truncate d-block">{{ $contact->position ?: ucfirst($contact->role) }}{{ $contact->phone ? ' - '.$contact->formatted_phone : '' }}</span>
+                        <span class="flex-grow-1 min-w-0 d-flex align-items-center gap-2">
+                            <span class="min-w-0">
+                                <strong class="d-block text-truncate">{{ $contact->name }}</strong>
+                                <span class="small cem-soft text-truncate d-block">{{ $contact->position ?: ucfirst($contact->role) }}{{ $contact->phone ? ' - '.$contact->formatted_phone : '' }}</span>
+                            </span>
+                            @if($unreadCount > 0)
+                                <span class="unread-badge" aria-label="{{ $unreadCount }} nouveau(x) message(s)">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                            @endif
                         </span>
                     </a>
                 @empty
