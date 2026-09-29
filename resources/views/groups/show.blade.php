@@ -4,13 +4,18 @@
 
 @section('content')
 <style>
-    .groups-page { min-height: calc(100vh - 8rem); }
+    .groups-page {
+        min-height: calc(100vh - 8rem);
+        width: min(100%, 1680px);
+        margin: 0 auto;
+    }
     .group-chat-card {
         display: grid;
-        grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
-        height: calc(100vh - 12.5rem);
-        min-height: 32rem;
-        max-height: calc(100vh - 12.5rem);
+        grid-template-columns: minmax(16rem, 23rem) minmax(0, 1fr);
+        width: min(100%, 1650px);
+        height: calc(100vh - 9.5rem);
+        min-height: 36rem;
+        max-height: calc(100vh - 9.5rem);
         overflow: hidden;
     }
     .group-members-sidebar {
