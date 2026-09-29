@@ -170,6 +170,10 @@
         border-color: #2dd4bf;
     }
     .private-attachment { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .7rem; border-radius: .7rem; background: rgba(216,124,77,.12); }
+    .private-status-row { display: flex; align-items: center; justify-content: flex-end; gap: .2rem; margin-top: .35rem; font-size: .72rem; font-weight: 700; }
+    .private-status-row .message-status { letter-spacing: .02em; }
+    .private-status-row .message-status.sent { color: rgba(255,255,255,.72); }
+    .private-status-row .message-status.read { color: #d7f7ef; }
     @media (max-width: 767.98px) { .private-messages-card { height: auto; min-height: 0; display: block; } .private-contacts { width: 100%; max-height: 18rem; border-right: 0; border-bottom: 1px solid rgba(23,52,59,.1); } .private-conversation { height: 32rem; min-height: 32rem; } .private-bubble { max-width: 88%; } }
     .private-image-trigger { display: block; border: 0; padding: 0; margin: 0; background: transparent; cursor: zoom-in; }
     .private-bubble.mine .private-reply-button { color: #fff; font-weight: 600; text-decoration: underline; }
@@ -260,7 +264,14 @@
                                         <a href="{{ route('private.messages.download', $message) }}" class="private-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}"><span>Fichier</span><span class="text-truncate">{{ $message->attachment_name }}</span></a>
                                     @endif
                                 @endif
-                                <div class="small mt-2 opacity-75 text-end">{{ $message->created_at->format('d/m/Y H:i') }}</div>
+                                <div class="private-status-row">
+                                    <span class="small opacity-75">{{ $message->created_at->format('d/m/Y H:i') }}</span>
+                                    @if($isMine)
+                                        <span class="message-status {{ $message->read_at ? 'read' : 'sent' }}" aria-label="{{ $message->read_at ? 'Message vu par le destinataire' : 'Message non vu par le destinataire' }}" title="{{ $message->read_at ? 'Message vu' : 'Message non vu' }}">
+                                            {{ $message->read_at ? '✓✓' : '✓' }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <div class="private-message-actions d-flex align-items-center gap-2 flex-wrap mt-2">
                                     @foreach($reactionGroups as $reaction => $items)
                                         <span class="badge reaction-summary {{ $myReaction === $reaction ? 'reaction-selected' : '' }}">{{ $reaction }} {{ $items->count() }}</span>

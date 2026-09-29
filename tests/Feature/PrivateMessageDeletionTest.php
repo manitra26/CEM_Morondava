@@ -79,4 +79,24 @@ class PrivateMessageDeletionTest extends TestCase
             ->get(route('private.messages.user', $recipient))
             ->assertSee($message->content);
     }
+
+    public function test_private_messages_show_read_status_for_sent_messages(): void
+    {
+        $sender = User::factory()->create();
+        $recipient = User::factory()->create();
+
+        $message = PrivateMessage::create([
+            'sender_id' => $sender->id,
+            'recipient_id' => $recipient->id,
+            'content' => 'Message avec statut vu',
+            'read_at' => now(),
+        ]);
+
+        $this->actingAs($sender)
+            ->get(route('private.messages.user', $recipient))
+            ->assertSee('message-status')
+            ->assertSee('✓✓');
+
+        $this->assertNotNull($message->fresh()->read_at);
+    }
 }
