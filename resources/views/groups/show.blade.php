@@ -5,17 +5,17 @@
 @section('content')
 <style>
     .groups-page {
-        min-height: calc(100vh - 8rem);
-        width: min(100%, 1680px);
+        min-height: calc(100vh - 7rem);
+        width: min(100%, 1760px);
         margin: 0 auto;
     }
     .group-chat-card {
         display: grid;
-        grid-template-columns: minmax(16rem, 23rem) minmax(0, 1fr);
-        width: min(100%, 1650px);
-        height: calc(100vh - 9.5rem);
-        min-height: 36rem;
-        max-height: calc(100vh - 9.5rem);
+        grid-template-columns: minmax(16rem, 24rem) minmax(0, 1fr);
+        width: min(100%, 1740px);
+        height: calc(100vh - 8.5rem);
+        min-height: 38rem;
+        max-height: calc(100vh - 8.5rem);
         overflow: hidden;
     }
     .group-members-sidebar {
@@ -34,6 +34,21 @@
     }
     .group-member-profile-button { width: 100%; border: 0; background: transparent; text-align: left; }
     .group-member-profile-button:hover, .group-member-profile-button:focus-visible { background: rgba(28,124,108,.1); }
+    .avatar-status-wrap { position: relative; display: inline-flex; }
+    .user-status-indicator {
+        position: absolute;
+        right: 2px;
+        bottom: 2px;
+        width: .7rem;
+        height: .7rem;
+        border-radius: 50%;
+        border: 2px solid white;
+        background: #22c55e;
+        box-shadow: 0 0 0 1px rgba(17, 24, 39, 0.08);
+        opacity: 1;
+        transition: opacity 0.2s ease;
+    }
+    .user-status-indicator.offline { opacity: 0; }
     .group-member { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border-bottom: 1px solid rgba(23,52,59,.07); }
     .group-conversation {
         display: flex;
@@ -311,11 +326,14 @@
         <div class="group-members-list">
             @foreach($group->members as $member)
                 <button type="button" class="group-member group-member-profile-button member-profile-trigger" data-member-name="{{ $member->name }}" data-member-role="{{ ucfirst($member->role) }}" data-member-position="{{ $member->position }}" data-member-department="{{ $member->department }}" data-member-domicile="{{ $member->domicile }}" data-member-phone="{{ $member->formatted_phone }}" data-member-email="{{ $member->email }}" data-member-bio="{{ $member->bio }}" data-member-avatar="{{ $member->avatar_path ? route('profile.avatar', $member) : '' }}" data-member-initial="{{ strtoupper(substr($member->name, 0, 1)) }}" data-member-message-url="{{ route('private.messages.user', $member) }}" data-member-is-current="{{ $member->id === auth()->id() ? '1' : '0' }}">
-                    @if($member->avatar_path)
-                        <img src="{{ route('profile.avatar', $member) }}" alt="Photo de {{ $member->name }}" class="cem-avatar">
-                    @else
-                        <span class="cem-avatar cem-avatar-placeholder">{{ strtoupper(substr($member->name, 0, 1)) }}</span>
-                    @endif
+                    <span class="avatar-status-wrap">
+                        @if($member->avatar_path)
+                            <img src="{{ route('profile.avatar', $member) }}" alt="Photo de {{ $member->name }}" class="cem-avatar">
+                        @else
+                            <span class="cem-avatar cem-avatar-placeholder">{{ strtoupper(substr($member->name, 0, 1)) }}</span>
+                        @endif
+                        <span class="user-status-indicator {{ $member->isOnline() ? 'online' : 'offline' }}" title="{{ $member->isOnline() ? 'En ligne' : 'Hors ligne' }}" aria-label="{{ $member->isOnline() ? 'En ligne' : 'Hors ligne' }}"></span>
+                    </span>
                     <span class="flex-grow-1 min-w-0">
                         <strong class="d-block text-truncate">{{ $member->name }}</strong>
                         <span class="small cem-soft text-truncate d-block text-capitalize">{{ $member->role }}{{ $member->position ? ' - '.$member->position : '' }}</span>

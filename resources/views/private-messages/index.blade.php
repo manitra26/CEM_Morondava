@@ -201,11 +201,14 @@
             <div class="private-contact-list">
                 @forelse($users as $contact)
                     <a href="{{ route('private.messages.user', $contact) }}" class="private-contact {{ $user?->is($contact) ? 'active' : '' }}">
-                        @if($contact->avatar_path)
-                            <img src="{{ route('profile.avatar', $contact) }}" alt="Photo de {{ $contact->name }}" class="cem-avatar">
-                        @else
-                            <span class="cem-avatar cem-avatar-placeholder">{{ strtoupper(substr($contact->name, 0, 1)) }}</span>
-                        @endif
+                        <span class="avatar-status-wrap">
+                            @if($contact->avatar_path)
+                                <img src="{{ route('profile.avatar', $contact) }}" alt="Photo de {{ $contact->name }}" class="cem-avatar">
+                            @else
+                                <span class="cem-avatar cem-avatar-placeholder">{{ strtoupper(substr($contact->name, 0, 1)) }}</span>
+                            @endif
+                            <span class="user-status-indicator {{ $contact->isOnline() ? 'online' : 'offline' }}" title="{{ $contact->isOnline() ? 'En ligne' : 'Hors ligne' }}" aria-label="{{ $contact->isOnline() ? 'En ligne' : 'Hors ligne' }}"></span>
+                        </span>
                         <span class="flex-grow-1 min-w-0">
                             <strong class="d-block text-truncate">{{ $contact->name }}</strong>
                             <span class="small cem-soft text-truncate d-block">{{ $contact->position ?: ucfirst($contact->role) }}{{ $contact->phone ? ' - '.$contact->formatted_phone : '' }}</span>
@@ -220,11 +223,14 @@
         <section class="private-conversation">
             @if($user)
                 <header class="p-3 border-bottom d-flex align-items-center gap-3">
-                    @if($user->avatar_path)
-                        <img src="{{ route('profile.avatar', $user) }}" alt="Photo de {{ $user->name }}" class="cem-avatar">
-                    @else
-                        <span class="cem-avatar cem-avatar-placeholder">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
-                    @endif
+                    <span class="avatar-status-wrap">
+                        @if($user->avatar_path)
+                            <img src="{{ route('profile.avatar', $user) }}" alt="Photo de {{ $user->name }}" class="cem-avatar">
+                        @else
+                            <span class="cem-avatar cem-avatar-placeholder">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                        @endif
+                        <span class="user-status-indicator {{ $user->isOnline() ? 'online' : 'offline' }}" title="{{ $user->isOnline() ? 'En ligne' : 'Hors ligne' }}" aria-label="{{ $user->isOnline() ? 'En ligne' : 'Hors ligne' }}"></span>
+                    </span>
                     <div>
                         <h2 class="h5 mb-1">{{ $user->name }}</h2>
                         <div class="small cem-soft">{{ $user->position ?: ucfirst($user->role) }}{{ $user->phone ? ' - '.$user->formatted_phone : '' }}</div>

@@ -29,6 +29,7 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            Auth::user()->update(['last_seen_at' => now()]);
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'));
@@ -57,6 +58,7 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
+        $user->update(['last_seen_at' => now()]);
         $request->session()->regenerate();
 
         return redirect()->route('dashboard')->with('success', 'Votre compte a été créé avec succès.');
@@ -64,6 +66,12 @@ class AuthController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
+        if ($user) {
+            $user->update(['last_seen_at' => null]);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

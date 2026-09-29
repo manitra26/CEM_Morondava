@@ -28,6 +28,7 @@ class User extends Authenticatable
         'domicile',
         'avatar_path',
         'theme',
+        'last_seen_at',
     ];
 
     protected $hidden = [
@@ -39,8 +40,14 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isOnline(int $minutesThreshold = 5): bool
+    {
+        return $this->last_seen_at !== null && $this->last_seen_at->diffInMinutes(now()) <= $minutesThreshold;
     }
 
     public function isDirector(): bool

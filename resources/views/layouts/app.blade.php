@@ -312,6 +312,21 @@
         html.theme-dark .cem-input-icon-wrapper:focus-within .cem-input-icon {
             color: #5eead4;
         }
+        .avatar-status-wrap { position: relative; display: inline-flex; }
+        .user-status-indicator {
+            position: absolute;
+            right: 3px;
+            bottom: 3px;
+            width: 0.8rem;
+            height: 0.8rem;
+            border-radius: 999px;
+            background: #22c55e;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px rgba(17, 24, 39, 0.08);
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+        .user-status-indicator.offline { opacity: 0; }
     </style>
 </head>
 <body>
@@ -461,6 +476,29 @@
 </script>
 
 <script>(() => { const button = document.querySelector('#cem-sidebar-toggle'); if (!button) return; const apply = (collapsed) => { document.body.classList.toggle('sidebar-collapsed', collapsed); button.setAttribute('aria-expanded', String(!collapsed)); button.setAttribute('aria-label', collapsed ? 'Afficher la sidebar' : 'Masquer la sidebar'); }; apply(localStorage.getItem('cem-sidebar-collapsed') === 'true'); button.addEventListener('click', () => { const collapsed = !document.body.classList.contains('sidebar-collapsed'); apply(collapsed); localStorage.setItem('cem-sidebar-collapsed', String(collapsed)); }); })();</script>
+<script>
+    (() => {
+        @auth
+        const heartbeatUrl = @json(route('users.heartbeat'));
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+        if (heartbeatUrl && csrfToken) {
+            const sendHeartbeat = () => fetch(heartbeatUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            }).catch(() => {});
+
+            sendHeartbeat();
+            window.setInterval(sendHeartbeat, 30000);
+        }
+        @endauth
+    })();
+</script>
 <script>
     document.addEventListener('click', function (e) {
         const button = e.target.closest('[data-password-toggle]');

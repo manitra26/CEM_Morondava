@@ -9,6 +9,8 @@ use App\Http\Controllers\PrivateMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserStatusController;
+use App\Http\Middleware\UpdateUserActivity;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,7 +26,8 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'destroy'])->middleware('auth')->name('logout');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', UpdateUserActivity::class])->group(function () {
+    Route::post('/users/heartbeat', [UserStatusController::class, 'heartbeat'])->name('users.heartbeat');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.edit');

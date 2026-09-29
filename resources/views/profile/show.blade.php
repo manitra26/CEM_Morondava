@@ -9,11 +9,14 @@
             <div class="cem-profile-cover"></div>
             <div class="card-body p-4">
                 <div class="d-flex flex-wrap gap-4 align-items-end mb-4">
-                    @if($user->avatar_path)
-                        <img src="{{ route('profile.avatar', $user) }}" alt="Photo de {{ $user->name }}" class="cem-avatar cem-avatar-lg">
-                    @else
-                        <div class="cem-avatar cem-avatar-lg cem-avatar-placeholder">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
-                    @endif
+                    <div class="avatar-status-wrap">
+                        @if($user->avatar_path)
+                            <img src="{{ route('profile.avatar', $user) }}" alt="Photo de {{ $user->name }}" class="cem-avatar cem-avatar-lg">
+                        @else
+                            <div class="cem-avatar cem-avatar-lg cem-avatar-placeholder">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                        @endif
+                        <span class="user-status-indicator {{ $user->isOnline() ? 'online' : 'offline' }}" title="{{ $user->isOnline() ? 'En ligne' : 'Hors ligne' }}" aria-label="{{ $user->isOnline() ? 'En ligne' : 'Hors ligne' }}"></span>
+                    </div>
                     <div class="pb-2">
                         <h1 class="fw-bold mb-1">{{ $user->name }}</h1>
                         <span class="badge cem-badge text-capitalize">{{ $user->role }}</span>
