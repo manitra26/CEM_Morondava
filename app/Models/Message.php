@@ -48,4 +48,16 @@ class Message extends Model
     {
         return $this->hasMany(MessageReaction::class);
     }
+
+    public function reads(): HasMany
+    {
+        return $this->hasMany(MessageRead::class);
+    }
+
+    public function isSeenByOthers(): bool
+    {
+        return $this->reads()
+            ->where('user_id', '!=', $this->user_id)
+            ->exists();
+    }
 }

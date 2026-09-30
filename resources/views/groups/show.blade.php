@@ -250,6 +250,23 @@
         border-radius: .7rem;
         background: rgba(216,124,77,.12);
     }
+    .group-message-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: .2rem;
+        font-size: .66rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0;
+        opacity: 0.9;
+    }
+    .group-message-status.sent {
+        color: rgba(255,255,255,0.68);
+    }
+    .group-message-status.seen {
+        color: #dffaf5;
+    }
     .group-image-trigger {
         display: block;
         border: 0;
@@ -442,6 +459,12 @@
                                     <span>📎 Fichier : </span><span class="text-truncate">{{ $message->attachment_name }}</span>
                                 </a>
                             @endif
+                        @endif
+                        @if(auth()->id() === $message->user_id)
+                            @php($isSeenByOthers = $message->isSeenByOthers())
+                            <div class="group-message-status {{ $isSeenByOthers ? 'seen' : 'sent' }}" aria-label="{{ $isSeenByOthers ? 'Message vu' : 'Message non vu' }}" title="{{ $isSeenByOthers ? 'Message vu' : 'Message non vu' }}">
+                                {{ $isSeenByOthers ? '✓✓' : '✓' }}
+                            </div>
                         @endif
                         <div class="d-flex align-items-center gap-2 flex-wrap reaction-actions position-relative">
                             <button type="button" class="btn btn-light btn-sm reaction-trigger" data-reaction-target="reaction-picker-{{ $message->id }}" title="Ajouter une réaction">😊</button>
@@ -921,6 +944,16 @@
                 fileLink.append(prefix, nameSpan);
                 item.append(fileLink);
             }
+        }
+
+        if (Number(message.user.id) === Number(chat.dataset.currentUserId)) {
+            const seen = Boolean(message.seen_by_others ?? false);
+            const status = document.createElement('div');
+            status.className = 'group-message-status ' + (seen ? 'seen' : 'sent');
+            status.setAttribute('aria-label', seen ? 'Message vu' : 'Message non vu');
+            status.setAttribute('title', seen ? 'Message vu' : 'Message non vu');
+            status.textContent = seen ? '✓✓' : '✓';
+            item.append(status);
         }
 
         const actions = document.createElement('div');

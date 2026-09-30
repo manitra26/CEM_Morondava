@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiscussionGroup;
+use App\Models\MessageRead;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,6 +69,8 @@ class DiscussionGroupController extends Controller
 
         abort_unless($canManage || $group->members()->where('users.id', $user->id)->exists(), 403);
 
+        $this->markMessagesAsRead($group, $user);
+
         $group->load([
             'creator',
             'members' => fn ($query) => $query->orderBy('name'),
@@ -87,6 +90,23 @@ class DiscussionGroupController extends Controller
             'isDirector' => $canManage,
             'canPost' => $canPost,
         ]);
+    }
+
+    private function markMessagesAsRead(DiscussionGroup $group, User $user): void
+    {
+        $messageIds = $group->messages()
+            ->where('user_id', '!=', $user->id)
+            ->whereDoesntHave('reads', fn ($query) => $query->where('user_id', $user->id))
+            ->pluck('id');
+
+        foreach ($messageIds as $messageId) {
+            MessageRead::firstOrCreate([
+                'message_id' => $messageId,
+                'user_id' => $user->id,
+            ], [
+                'read_at' => now(),
+            ]);
+        }
     }
 
     public function update(Request $request, DiscussionGroup $group): RedirectResponse

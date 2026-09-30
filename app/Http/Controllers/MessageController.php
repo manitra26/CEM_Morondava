@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DiscussionGroup;
 use App\Models\InternalNotification;
 use App\Models\Message;
+use App\Models\MessageRead;
 use App\Models\MessageReaction;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ class MessageController extends Controller
     public function index(Request $request, DiscussionGroup $group): JsonResponse
     {
         $this->ensureMember($request, $group);
+        $this->markMessagesAsRead($group, $request->user());
 
         $messages = $group->messages()
             ->with(['user:id,name,role,position,avatar_path', 'replyTo.user:id,name', 'reactions.user:id,name,role,position,avatar_path'])
@@ -34,6 +36,7 @@ class MessageController extends Controller
                 'content' => $message->content,
                 'status' => $message->status,
                 'created_at' => $message->created_at?->format('d/m/Y H:i'),
+                'seen_by_others' => $message->isSeenByOthers(),
                 'attachment_name' => $message->attachment_name,
                 'attachment_mime' => $message->attachment_mime,
                 'attachment_size' => $message->attachment_size,
@@ -205,6 +208,23 @@ class MessageController extends Controller
         abort_unless($message->attachment_path && Storage::exists($message->attachment_path), 404);
 
         return Storage::download($message->attachment_path, $message->attachment_name ?: basename($message->attachment_path), ['Content-Type' => 'application/octet-stream']);
+    }
+
+    private function markMessagesAsRead(DiscussionGroup $group, User $user): void
+    {
+        $messageIds = $group->messages()
+            ->where('user_id', '!=', $user->id)
+            ->whereDoesntHave('reads', fn ($query) => $query->where('user_id', $user->id))
+            ->pluck('id');
+
+        foreach ($messageIds as $messageId) {
+            MessageRead::firstOrCreate([
+                'message_id' => $messageId,
+                'user_id' => $user->id,
+            ], [
+                'read_at' => now(),
+            ]);
+        }
     }
 
     private function ensureMessageMember(Request $request, Message $message): void
