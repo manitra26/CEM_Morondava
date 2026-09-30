@@ -50,6 +50,7 @@ Route::middleware(['auth', UpdateUserActivity::class])->group(function () {
 
     Route::get('/groups', [DiscussionGroupController::class, 'index'])->name('groups.index');
     Route::post('/groups', [DiscussionGroupController::class, 'store'])->name('groups.store');
+    Route::delete('/groups/{group}', [DiscussionGroupController::class, 'destroy'])->name('groups.destroy');
     Route::get('/groups/{group}', [DiscussionGroupController::class, 'show'])->name('groups.show');
     Route::put('/groups/{group}', [DiscussionGroupController::class, 'update'])->name('groups.update');
     Route::get('/groups/{group}/image', [DiscussionGroupController::class, 'image'])->name('groups.image');

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiscussionGroup;
+use App\Models\InternalNotification;
 use App\Models\MessageRead;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -23,6 +25,11 @@ class DiscussionGroupController extends Controller
         ]);
 
         $groups = DiscussionGroup::with(['creator', 'members'])
+            ->withCount([
+                'messages as unread_count' => fn ($query) => $query
+                    ->where('user_id', '!=', $user->id)
+                    ->whereDoesntHave('reads', fn ($readQuery) => $readQuery->where('user_id', $user->id)),
+            ])
             ->when(! $isDirector, fn ($query) => $query->whereHas('members', fn ($memberQuery) => $memberQuery->where('users.id', $user->id)))
             ->when($filters['search'] ?? null, function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
@@ -131,6 +138,31 @@ class DiscussionGroupController extends Controller
         $group->update($data);
 
         return back()->with('success', 'Les paramètres du groupe ont été mis à jour.');
+    }
+
+    public function destroy(DiscussionGroup $group): RedirectResponse
+    {
+        $this->ensureCanManage($group);
+
+        $filePaths = $group->messages()
+            ->withTrashed()
+            ->pluck('attachment_path')
+            ->push($group->image_path)
+            ->filter()
+            ->all();
+
+        DB::transaction(function () use ($group): void {
+            InternalNotification::query()
+                ->where('type', 'message')
+                ->where('data->group_id', $group->id)
+                ->delete();
+
+            $group->delete();
+        });
+
+        Storage::delete($filePaths);
+
+        return redirect()->route('groups.index')->with('success', 'Le groupe et tous ses messages ont été supprimés.');
     }
 
     public function image(DiscussionGroup $group): Response|StreamedResponse

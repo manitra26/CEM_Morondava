@@ -74,4 +74,34 @@ class GroupMessageReadStatusTest extends TestCase
         $response->assertOk();
         $response->assertSee('✓✓');
     }
+
+    public function test_groups_list_shows_unread_message_badge_for_new_message(): void
+    {
+        $author = User::factory()->create();
+        $reader = User::factory()->create();
+
+        $group = DiscussionGroup::create([
+            'name' => 'Groupe alert',
+            'description' => 'Alerte de message',
+            'created_by' => $author->id,
+        ]);
+
+        $group->members()->attach([
+            $author->id => ['can_post' => true],
+            $reader->id => ['can_post' => true],
+        ]);
+
+        Message::create([
+            'discussion_group_id' => $group->id,
+            'user_id' => $author->id,
+            'content' => 'Nouveau message',
+        ]);
+
+        $response = $this->actingAs($reader)
+            ->get(route('groups.index'));
+
+        $response->assertOk();
+        $response->assertSee('group-alert-badge');
+        $response->assertSee('1');
+    }
 }

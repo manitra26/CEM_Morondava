@@ -3,6 +3,23 @@
 @section('title', 'Discussions de groupe')
 
 @section('content')
+<style>
+    .group-alert-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.35rem;
+        height: 1.35rem;
+        padding: 0 .38rem;
+        border-radius: 999px;
+        background: #f26d6d;
+        color: #fff;
+        font-size: .68rem;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: 0 4px 12px rgba(242, 109, 109, 0.35);
+    }
+</style>
 <div class="groups-page">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
@@ -44,7 +61,13 @@
                                 @else
                                     <span class="cem-avatar cem-group-avatar cem-avatar-placeholder">{{ strtoupper(substr($group->name, 0, 1)) }}</span>
                                 @endif
-                                <h5 class="mb-1">{{ $group->name }}</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h5 class="mb-1">{{ $group->name }}</h5>
+                                    @php($unreadCount = $group->unread_count)
+                                    @if($unreadCount > 0)
+                                        <span class="group-alert-badge" title="{{ $unreadCount }} nouveau(x) message(s)">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                                    @endif
+                                </div>
                             </div>
                             <div class="small cem-soft">Créé par {{ $group->creator->name }} - {{ $group->members->count() }} membre(s)</div>
                         </div>
@@ -58,6 +81,13 @@
                                 @csrf
                                 <button type="submit" class="btn btn-outline-secondary btn-sm">Quitter</button>
                             </form>
+                            @if($isDirector || $group->created_by === auth()->id())
+                                <form method="POST" action="{{ route('groups.destroy', $group) }}" onsubmit="return confirm('Supprimer définitivement ce groupe et ses messages ?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer le groupe</button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                     <p class="mt-3 mb-0">{{ $group->description }}</p>
