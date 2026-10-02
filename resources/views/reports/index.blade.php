@@ -26,17 +26,6 @@
                         <label for="report-search" class="form-label small mb-1">Rechercher</label>
                         <input id="report-search" type="search" name="search" class="form-control" value="{{ $filters['search'] ?? '' }}" placeholder="Titre, contenu ou auteur">
                     </div>
-                    @if($isDirector)
-                        <div class="col-xl-3 col-lg-3">
-                            <label for="report-user" class="form-label small mb-1">Utilisateur</label>
-                            <select id="report-user" name="user_id" class="form-select">
-                                <option value="">Tous les utilisateurs</option>
-                                @foreach($reportUsers as $reportUser)
-                                    <option value="{{ $reportUser->id }}" @selected((string) ($filters['user_id'] ?? '') === (string) $reportUser->id)>{{ $reportUser->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
                     <div class="col-xl-2 col-lg-2 col-sm-6">
                         <label for="report-date-from" class="form-label small mb-1">Du</label>
                         <input id="report-date-from" type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}">

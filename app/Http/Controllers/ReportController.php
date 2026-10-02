@@ -18,7 +18,6 @@ class ReportController extends Controller
         $isDirector = $user->role === 'directeur';
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
         ]);
@@ -27,22 +26,17 @@ class ReportController extends Controller
             ->when(! $isDirector, fn ($query) => $query->where('user_id', $user->id))
             ->when($filters['search'] ?? null, function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
-                    $query->where('title', 'like', '%'.$search.'%')
-                        ->orWhere('content', 'like', '%'.$search.'%')
-                        ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', '%'.$search.'%'));
+                    $query->whereLike('title', '%'.$search.'%')
+                        ->orWhereLike('content', '%'.$search.'%')
+                        ->orWhereHas('user', fn ($userQuery) => $userQuery->whereLike('name', '%'.$search.'%'));
                 });
             })
-            ->when($isDirector && ($filters['user_id'] ?? null), fn ($query, int $userId) => $query->where('user_id', $userId))
             ->when($filters['date_from'] ?? null, fn ($query, string $date) => $query->whereDate('submitted_at', '>=', $date))
             ->when($filters['date_to'] ?? null, fn ($query, string $date) => $query->whereDate('submitted_at', '<=', $date))
             ->latest('submitted_at')
             ->get();
 
-        $reportUsers = $isDirector
-            ? User::query()->whereHas('reports')->orderBy('name')->get(['id', 'name'])
-            : collect();
-
-        return view('reports.index', compact('reports', 'isDirector', 'reportUsers', 'filters'));
+        return view('reports.index', compact('reports', 'isDirector', 'filters'));
     }
 
     public function store(Request $request): RedirectResponse
