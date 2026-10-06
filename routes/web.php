@@ -42,6 +42,8 @@ Route::middleware(['auth', UpdateUserActivity::class])->group(function () {
     Route::delete('/private-messages/{privateMessage}', [PrivateMessageController::class, 'destroy'])->name('private.messages.destroy');
     Route::get('/private-messages/{privateMessage}/file', [PrivateMessageController::class, 'file'])->name('private.messages.file');
     Route::get('/private-messages/{privateMessage}/download', [PrivateMessageController::class, 'download'])->name('private.messages.download');
+    Route::get('/private-messages/{privateMessage}/attachments/{attachment}/file', [PrivateMessageController::class, 'attachmentFile'])->name('private.messages.attachments.file');
+    Route::get('/private-messages/{privateMessage}/attachments/{attachment}/download', [PrivateMessageController::class, 'attachmentDownload'])->name('private.messages.attachments.download');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
@@ -67,6 +69,8 @@ Route::middleware(['auth', UpdateUserActivity::class])->group(function () {
     Route::post('/messages/{message}/restore', [MessageController::class, 'restore'])->withTrashed()->name('messages.restore');
     Route::get('/messages/{message}/file', [MessageController::class, 'file'])->name('messages.file');
     Route::get('/messages/{message}/download', [MessageController::class, 'download'])->name('messages.download');
+    Route::get('/messages/{message}/attachments/{attachment}/file', [MessageController::class, 'attachmentFile'])->name('messages.attachments.file');
+    Route::get('/messages/{message}/attachments/{attachment}/download', [MessageController::class, 'attachmentDownload'])->name('messages.attachments.download');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InternalNotification;
+use App\Models\MessageAttachment;
 use App\Models\PrivateMessage;
 use App\Models\PrivateMessageReaction;
 use App\Models\User;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -41,7 +43,7 @@ class PrivateMessageController extends Controller
         if ($user) {
             $messages = $this->conversationQuery($currentUser, $user)
                 ->visibleTo($currentUser)
-                ->with(['sender', 'recipient', 'replyTo' => fn ($query) => $query->visibleTo($currentUser)->with('sender'), 'reactions.user'])
+                ->with(['sender', 'recipient', 'attachments', 'replyTo' => fn ($query) => $query->visibleTo($currentUser)->with(['sender', 'attachments']), 'reactions.user'])
                 ->oldest()
                 ->get();
 
@@ -59,16 +61,28 @@ class PrivateMessageController extends Controller
         abort_if($user->is($request->user()), 422, 'Vous ne pouvez pas vous envoyer un message.');
 
         $data = $request->validate([
-            'content' => ['nullable', 'string', 'max:4000', 'required_without:attachment'],
+            'content' => ['nullable', 'string', 'max:4000', 'required_without_all:attachment,attachments'],
             'reply_to_id' => ['nullable', 'integer', 'exists:private_messages,id'],
-            'attachment' => ['nullable', 'file', 'max:20480', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
+            'attachments' => ['nullable', 'array', 'max:5'],
+            'attachments.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
         ]);
+
+        $attachments = collect($request->file('attachments', []))->filter()->values();
+        $legacyAttachment = $request->file('attachment');
+        if ($legacyAttachment) {
+            $attachments->prepend($legacyAttachment);
+        }
+        if ($attachments->count() > 5) {
+            throw ValidationException::withMessages([
+                'attachments' => 'Vous pouvez joindre au maximum 5 fichiers par message.',
+            ]);
+        }
 
         if (! empty($data['reply_to_id'])) {
             abort_unless($this->conversationQuery($request->user(), $user)->whereKey($data['reply_to_id'])->exists(), 422, 'Le message cite n appartient pas a cette conversation.');
         }
 
-        $attachment = $request->file('attachment');
         $payload = [
             'sender_id' => $request->user()->id,
             'recipient_id' => $user->id,
@@ -76,14 +90,24 @@ class PrivateMessageController extends Controller
             'content' => $data['content'] ?? null,
         ];
 
-        if ($attachment) {
-            $payload['attachment_path'] = $attachment->store('private-messages');
-            $payload['attachment_name'] = $attachment->getClientOriginalName();
-            $payload['attachment_mime'] = $attachment->getMimeType();
-            $payload['attachment_size'] = $attachment->getSize();
+        if ($legacyAttachment && $attachments->count() === 1) {
+            $payload['attachment_path'] = $legacyAttachment->store('private-messages');
+            $payload['attachment_name'] = $legacyAttachment->getClientOriginalName();
+            $payload['attachment_mime'] = $legacyAttachment->getMimeType();
+            $payload['attachment_size'] = $legacyAttachment->getSize();
         }
 
         $message = PrivateMessage::create($payload);
+        if (! $legacyAttachment || $attachments->count() > 1) {
+            foreach ($attachments as $attachment) {
+                $message->attachments()->create([
+                    'path' => $attachment->store('private-messages'),
+                    'name' => $attachment->getClientOriginalName(),
+                    'mime' => $attachment->getMimeType(),
+                    'size' => $attachment->getSize(),
+                ]);
+            }
+        }
 
         InternalNotification::create([
             'user_id' => $user->id,
@@ -137,6 +161,8 @@ class PrivateMessageController extends Controller
             if ($privateMessage->attachment_path) {
                 Storage::delete($privateMessage->attachment_path);
             }
+            Storage::delete($privateMessage->attachments()->pluck('path')->all());
+            $privateMessage->attachments()->delete();
 
             $privateMessage->delete();
 
@@ -191,5 +217,23 @@ class PrivateMessageController extends Controller
         abort_unless($privateMessage->attachment_path && Storage::exists($privateMessage->attachment_path), 404);
 
         return Storage::download($privateMessage->attachment_path, $privateMessage->attachment_name ?: basename($privateMessage->attachment_path), ['Content-Type' => 'application/octet-stream']);
+    }
+
+    public function attachmentFile(Request $request, PrivateMessage $privateMessage, MessageAttachment $attachment): Response|StreamedResponse
+    {
+        $this->authorizeParticipant($request, $privateMessage);
+        $attachment = $privateMessage->attachments()->findOrFail($attachment->id);
+        abort_unless(Storage::exists($attachment->path), 404);
+
+        return Storage::response($attachment->path);
+    }
+
+    public function attachmentDownload(Request $request, PrivateMessage $privateMessage, MessageAttachment $attachment): Response|StreamedResponse
+    {
+        $this->authorizeParticipant($request, $privateMessage);
+        $attachment = $privateMessage->attachments()->findOrFail($attachment->id);
+        abort_unless(Storage::exists($attachment->path), 404);
+
+        return Storage::download($attachment->path, $attachment->name, ['Content-Type' => 'application/octet-stream']);
     }
 }

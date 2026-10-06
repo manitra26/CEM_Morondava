@@ -28,6 +28,7 @@ class DiscussionGroupController extends Controller
             ->withCount([
                 'messages as unread_count' => fn ($query) => $query
                     ->where('user_id', '!=', $user->id)
+                    ->whereDoesntHave('hiddenForUsers', fn ($hiddenQuery) => $hiddenQuery->where('users.id', $user->id))
                     ->whereDoesntHave('reads', fn ($readQuery) => $readQuery->where('user_id', $user->id)),
             ])
             ->when(! $isDirector, fn ($query) => $query->whereHas('members', fn ($memberQuery) => $memberQuery->where('users.id', $user->id)))
@@ -81,9 +82,9 @@ class DiscussionGroupController extends Controller
         $group->load([
             'creator',
             'members' => fn ($query) => $query->orderBy('name'),
-            'messages.user',
-            'messages.replyTo.user',
-            'messages.reactions.user',
+            'messages' => fn ($query) => $query
+                ->whereDoesntHave('hiddenForUsers', fn ($hiddenQuery) => $hiddenQuery->where('users.id', $user->id))
+                ->with(['attachments', 'user', 'replyTo.attachments', 'replyTo.user', 'reactions.user']),
         ]);
 
         $allUsers = User::orderBy('name')->get();
@@ -103,6 +104,7 @@ class DiscussionGroupController extends Controller
     {
         $messageIds = $group->messages()
             ->where('user_id', '!=', $user->id)
+            ->whereDoesntHave('hiddenForUsers', fn ($query) => $query->where('users.id', $user->id))
             ->whereDoesntHave('reads', fn ($query) => $query->where('user_id', $user->id))
             ->pluck('id');
 
@@ -146,7 +148,12 @@ class DiscussionGroupController extends Controller
 
         $filePaths = $group->messages()
             ->withTrashed()
-            ->pluck('attachment_path')
+            ->with('attachments')
+            ->get()
+            ->flatMap(fn ($message) => [
+                $message->attachment_path,
+                ...$message->attachments->pluck('path')->all(),
+            ])
             ->push($group->image_path)
             ->filter()
             ->all();

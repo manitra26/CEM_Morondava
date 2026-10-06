@@ -24,6 +24,14 @@ class PrivateMessageDeletionTest extends TestCase
             'attachment_path' => 'private-messages/image.png',
         ]);
         Storage::put($message->attachment_path, 'image content');
+        $additionalAttachmentPath = 'private-messages/another-image.png';
+        $message->attachments()->create([
+            'path' => $additionalAttachmentPath,
+            'name' => 'another-image.png',
+            'mime' => 'image/png',
+            'size' => 100,
+        ]);
+        Storage::put($additionalAttachmentPath, 'another image content');
 
         $this->actingAs($sender)
             ->delete(route('private.messages.destroy', $message), ['scope' => 'everyone'])
@@ -31,6 +39,8 @@ class PrivateMessageDeletionTest extends TestCase
 
         $this->assertSoftDeleted('private_messages', ['id' => $message->id]);
         Storage::assertMissing($message->attachment_path);
+        Storage::assertMissing($additionalAttachmentPath);
+        $this->assertDatabaseMissing('message_attachments', ['private_message_id' => $message->id]);
     }
 
     public function test_recipient_cannot_delete_a_message_for_everyone(): void

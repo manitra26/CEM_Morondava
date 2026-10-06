@@ -65,6 +65,7 @@
     .private-bubble.mine { margin-left: auto; color: white; background: linear-gradient(135deg, #1c7c6c, #165e54); border-bottom-right-radius: .25rem; }
     .private-bubble.theirs { background: white; border-bottom-left-radius: .25rem; }
     .private-attachment-preview { display: flex; align-items: center; gap: .75rem; padding: .65rem; margin-bottom: .75rem; border: 1px solid rgba(28,124,108,.25); border-radius: .85rem; background: rgba(28,124,108,.06); } .private-attachment-preview img { width: 4rem; height: 4rem; object-fit: cover; border-radius: .55rem; }
+    #private-attachment-thumbnail { display: flex; flex-wrap: wrap; gap: .35rem; }
     .private-composer { border-top: 1px solid rgba(23,52,59,.1); }
     html.theme-dark .private-composer { background: #1b2a2e; border-top-color: rgba(237,247,243,.1); }
     .whatsapp-send-btn {
@@ -271,7 +272,7 @@
                         <div class="d-flex mb-3 {{ $isMine ? 'justify-content-end' : '' }}">
                             <div class="private-bubble {{ $isMine ? 'mine' : 'theirs' }}">
                                 @if($message->replyTo)
-                                    <div class="private-reply-quote mb-2"><strong>{{ $message->replyTo->sender->name }}</strong><br>{{ Illuminate\Support\Str::limit($message->replyTo->content ?: $message->replyTo->attachment_name, 100) }}</div>
+                                    <div class="private-reply-quote mb-2"><strong>{{ $message->replyTo->sender->name }}</strong><br>{{ Illuminate\Support\Str::limit($message->replyTo->content ?: ($message->replyTo->attachment_name ?: $message->replyTo->attachments->first()?->name), 100) }}</div>
                                 @endif
                                 @if($message->content)<div class="text-break">{{ $message->content }}</div>@endif
                                 @if($message->attachment_path)
@@ -286,6 +287,18 @@
                                         <a href="{{ route('private.messages.download', $message) }}" class="private-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}"><span>Fichier</span><span class="text-truncate">{{ $message->attachment_name }}</span></a>
                                     @endif
                                 @endif
+                                @foreach($message->attachments as $attachment)
+                                    @if(str_starts_with($attachment->mime, 'image/'))
+                                        <a href="{{ route('private.messages.attachments.file', [$message, $attachment]) }}" class="private-image-trigger mt-2" target="_blank" rel="noopener" title="Voir l'image {{ $attachment->name }}">
+                                            <img src="{{ route('private.messages.attachments.file', [$message, $attachment]) }}" alt="{{ $attachment->name }}">
+                                        </a>
+                                        <a href="{{ route('private.messages.attachments.download', [$message, $attachment]) }}" class="private-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}" download>
+                                            <span>Télécharger {{ $attachment->name }}</span>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('private.messages.attachments.download', [$message, $attachment]) }}" class="private-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}"><span>Fichier</span><span class="text-truncate">{{ $attachment->name }}</span></a>
+                                    @endif
+                                @endforeach
                                 <div class="private-status-row">
                                     <span class="small opacity-75">{{ $message->created_at->format('d/m/Y H:i') }}</span>
                                     @if($isMine)
@@ -309,7 +322,7 @@
                                             @endforeach
                                         </div>
                                     </details>
-                                    <button type="button" class="btn btn-sm btn-link private-reply-button" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->sender->name }}" data-reply-content="{{ $message->content ?: $message->attachment_name }}">Répondre</button>
+                                    <button type="button" class="btn btn-sm btn-link private-reply-button" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->sender->name }}" data-reply-content="{{ $message->content ?: ($message->attachment_name ?: $message->attachments->first()?->name) }}">Répondre</button>
                                     <details class="private-delete-menu">
                                         <summary title="Supprimer le message">&#128465;</summary>
                                         <div class="private-delete-picker">
@@ -361,7 +374,7 @@
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                             </svg>
-                            <input id="private-attachment-input" type="file" name="attachment" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt">
+                            <input id="private-attachment-input" type="file" name="attachments[]" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt" multiple>
                         </label>
                         <textarea id="private-content" name="content" rows="1" class="form-control chat-textarea" placeholder="Écrire un message...">{{ old('content') }}</textarea>
                         <button id="private-submit" type="submit" class="whatsapp-send-btn" title="Envoyer le message" aria-label="Envoyer">
@@ -370,7 +383,7 @@
                             </svg>
                         </button>
                     </div>
-                    <div class="small cem-soft mt-2">Photos, PDF, Word, Excel, PowerPoint, ZIP ou fichiers texte, 20 Mo maximum.</div>
+                    <!-- <div class="small cem-soft mt-2">Jusqu’à 5 photos ou fichiers par message. Pas de limite de taille dans l’application ; le serveur peut en imposer une.</div> -->
                 </form>
             @else
                 <div class="h-100 d-grid place-items-center text-center p-4">
@@ -416,29 +429,48 @@
         ? `${Math.max(1, Math.round(bytes / 1024))} Ko`
         : `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 
-    input.addEventListener('change', () => {
-        const file = input.files[0];
-        if (!file) return;
-        name.textContent = file.name;
-        size.textContent = formatSize(file.size);
+    const clearThumbnails = () => {
         thumbnail.replaceChildren();
-        if (file.type.startsWith('image/')) {
-            const image = document.createElement('img');
-            image.src = URL.createObjectURL(file);
-            image.alt = 'Apercu de ' + file.name;
-            thumbnail.append(image);
-        } else {
-            const badge = document.createElement('span');
-            badge.className = 'badge cem-badge p-3';
-            badge.textContent = 'Fichier';
-            thumbnail.append(badge);
+    };
+
+    input.addEventListener('change', () => {
+        clearThumbnails();
+        const files = Array.from(input.files || []);
+        if (files.length > 5) {
+            input.value = '';
+            preview.classList.remove('d-none');
+            name.textContent = '';
+            size.textContent = 'Vous pouvez joindre au maximum 5 fichiers.';
+            return;
         }
+        if (!files.length) {
+            preview.classList.add('d-none');
+            return;
+        }
+        name.textContent = files.map((file) => file.name).join(', ');
+        size.textContent = `${files.length} fichier(s) · ${formatSize(files.reduce((total, file) => total + file.size, 0))}`;
+        files.forEach((file) => {
+            if (file.type.startsWith('image/')) {
+                const image = document.createElement('img');
+                const imageUrl = URL.createObjectURL(file);
+                image.onload = () => URL.revokeObjectURL(imageUrl);
+                image.onerror = () => URL.revokeObjectURL(imageUrl);
+                image.src = imageUrl;
+                image.alt = 'Apercu de ' + file.name;
+                thumbnail.append(image);
+            } else {
+                const badge = document.createElement('span');
+                badge.className = 'badge cem-badge p-2';
+                badge.textContent = file.name;
+                thumbnail.append(badge);
+            }
+        });
         preview.classList.remove('d-none');
     });
 
     remove.addEventListener('click', () => {
         input.value = '';
-        thumbnail.replaceChildren();
+        clearThumbnails();
         preview.classList.add('d-none');
     });
 })();

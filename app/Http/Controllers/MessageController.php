@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\DiscussionGroup;
 use App\Models\InternalNotification;
 use App\Models\Message;
-use App\Models\MessageRead;
+use App\Models\MessageAttachment;
 use App\Models\MessageReaction;
+use App\Models\MessageRead;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -25,7 +27,8 @@ class MessageController extends Controller
         $this->markMessagesAsRead($group, $request->user());
 
         $messages = $group->messages()
-            ->with(['user:id,name,role,position,avatar_path', 'replyTo.user:id,name', 'reactions.user:id,name,role,position,avatar_path'])
+            ->whereDoesntHave('hiddenForUsers', fn ($query) => $query->where('users.id', $request->user()->id))
+            ->with(['user:id,name,role,position,avatar_path', 'attachments', 'replyTo.user:id,name', 'reactions.user:id,name,role,position,avatar_path'])
             ->latest('id')
             ->limit(100)
             ->get()
@@ -42,6 +45,16 @@ class MessageController extends Controller
                 'attachment_size' => $message->attachment_size,
                 'attachment_url' => $message->attachment_path ? route('messages.file', $message) : null,
                 'download_url' => $message->attachment_path ? route('messages.download', $message) : null,
+                'attachments' => $message->attachments->map(fn (MessageAttachment $attachment): array => [
+                    'name' => $attachment->name,
+                    'mime' => $attachment->mime,
+                    'size' => $attachment->size,
+                    'url' => route('messages.attachments.file', [$message, $attachment]),
+                    'download_url' => route('messages.attachments.download', [$message, $attachment]),
+                ])->values(),
+                'delete_url' => route('messages.destroy', $message),
+                'can_delete_everyone' => $request->user()->role === 'directeur'
+                    || $message->user_id === $request->user()->id,
                 'user' => [
                     'id' => $message->user->id,
                     'name' => $message->user->name,
@@ -52,7 +65,8 @@ class MessageController extends Controller
                 'reply_to' => $message->replyTo ? [
                     'id' => $message->replyTo->id,
                     'user_name' => $message->replyTo->user->name,
-                    'content' => $message->replyTo->content,
+                    'content' => $message->replyTo->content
+                        ?: ($message->replyTo->attachment_name ?: $message->replyTo->attachments->first()?->name),
                 ] : null,
                 'reactions' => $message->reactions->groupBy('reaction')->map(fn ($items): array => [
                     'count' => $items->count(),
@@ -67,7 +81,18 @@ class MessageController extends Controller
                 ]),
             ]);
 
-        return response()->json(['messages' => $messages]);
+        $hiddenMessageIds = Message::withTrashed()
+            ->where('discussion_group_id', $group->id)
+            ->where(function ($query) use ($request): void {
+                $query->whereNotNull('deleted_at')
+                    ->orWhereHas('hiddenForUsers', fn ($hiddenQuery) => $hiddenQuery->where('users.id', $request->user()->id));
+            })
+            ->pluck('id');
+
+        return response()->json([
+            'messages' => $messages,
+            'hidden_message_ids' => $hiddenMessageIds,
+        ]);
     }
 
     public function typing(Request $request, DiscussionGroup $group): JsonResponse
@@ -101,16 +126,28 @@ class MessageController extends Controller
         $this->ensureCanPost($request, $group);
 
         $data = $request->validate([
-            'content' => ['nullable', 'string', 'max:4000', 'required_without:attachment'],
+            'content' => ['nullable', 'string', 'max:4000', 'required_without_all:attachment,attachments'],
             'reply_to_id' => ['nullable', 'integer', 'exists:messages,id'],
-            'attachment' => ['nullable', 'file', 'max:20480', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
+            'attachments' => ['nullable', 'array', 'max:5'],
+            'attachments.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,txt'],
         ]);
+
+        $attachments = collect($request->file('attachments', []))->filter()->values();
+        $legacyAttachment = $request->file('attachment');
+        if ($legacyAttachment) {
+            $attachments->prepend($legacyAttachment);
+        }
+        if ($attachments->count() > 5) {
+            throw ValidationException::withMessages([
+                'attachments' => 'Vous pouvez joindre au maximum 5 fichiers par message.',
+            ]);
+        }
 
         if (! empty($data['reply_to_id'])) {
             abort_unless($group->messages()->whereKey($data['reply_to_id'])->exists(), 422, 'Le message cité n’appartient pas à ce groupe.');
         }
 
-        $attachment = $request->file('attachment');
         $payload = [
             'user_id' => $request->user()->id,
             'content' => $data['content'] ?? null,
@@ -118,14 +155,24 @@ class MessageController extends Controller
             'status' => 'active',
         ];
 
-        if ($attachment) {
-            $payload['attachment_path'] = $attachment->store('group-messages');
-            $payload['attachment_name'] = $attachment->getClientOriginalName();
-            $payload['attachment_mime'] = $attachment->getMimeType();
-            $payload['attachment_size'] = $attachment->getSize();
+        if ($legacyAttachment && $attachments->count() === 1) {
+            $payload['attachment_path'] = $legacyAttachment->store('group-messages');
+            $payload['attachment_name'] = $legacyAttachment->getClientOriginalName();
+            $payload['attachment_mime'] = $legacyAttachment->getMimeType();
+            $payload['attachment_size'] = $legacyAttachment->getSize();
         }
 
         $message = $group->messages()->create($payload);
+        if (! $legacyAttachment || $attachments->count() > 1) {
+            foreach ($attachments as $attachment) {
+                $message->attachments()->create([
+                    'path' => $attachment->store('group-messages'),
+                    'name' => $attachment->getClientOriginalName(),
+                    'mime' => $attachment->getMimeType(),
+                    'size' => $attachment->getSize(),
+                ]);
+            }
+        }
 
         $memberIds = $group->members()->pluck('users.id')->all();
         foreach ($memberIds as $memberId) {
@@ -172,15 +219,26 @@ class MessageController extends Controller
         return back();
     }
 
-    public function destroy(Message $message): RedirectResponse
+    public function destroy(Request $request, Message $message): RedirectResponse
     {
-        $user = auth()->user();
+        $this->ensureMessageMember($request, $message);
+        $user = $request->user();
+        $data = $request->validate([
+            'scope' => ['required', Rule::in(['me', 'everyone'])],
+        ]);
+
+        if ($data['scope'] === 'me') {
+            $message->hiddenForUsers()->syncWithoutDetaching([$user->id]);
+
+            return back()->with('success', 'Message supprimé pour vous.');
+        }
+
         abort_unless($user->role === 'directeur' || $message->user_id === $user->id, 403);
 
         $message->update(['status' => 'deleted']);
         $message->delete();
 
-        return back()->with('success', 'Message supprimé.');
+        return back()->with('success', 'Message supprimé pour tout le monde.');
     }
 
     public function restore(Message $message): RedirectResponse
@@ -210,10 +268,29 @@ class MessageController extends Controller
         return Storage::download($message->attachment_path, $message->attachment_name ?: basename($message->attachment_path), ['Content-Type' => 'application/octet-stream']);
     }
 
+    public function attachmentFile(Request $request, Message $message, MessageAttachment $attachment): Response|StreamedResponse
+    {
+        $this->ensureMessageMember($request, $message);
+        $attachment = $message->attachments()->findOrFail($attachment->id);
+        abort_unless(Storage::exists($attachment->path), 404);
+
+        return Storage::response($attachment->path);
+    }
+
+    public function attachmentDownload(Request $request, Message $message, MessageAttachment $attachment): Response|StreamedResponse
+    {
+        $this->ensureMessageMember($request, $message);
+        $attachment = $message->attachments()->findOrFail($attachment->id);
+        abort_unless(Storage::exists($attachment->path), 404);
+
+        return Storage::download($attachment->path, $attachment->name, ['Content-Type' => 'application/octet-stream']);
+    }
+
     private function markMessagesAsRead(DiscussionGroup $group, User $user): void
     {
         $messageIds = $group->messages()
             ->where('user_id', '!=', $user->id)
+            ->whereDoesntHave('hiddenForUsers', fn ($query) => $query->where('users.id', $user->id))
             ->whereDoesntHave('reads', fn ($query) => $query->where('user_id', $user->id))
             ->pluck('id');
 

@@ -41,6 +41,14 @@ class GroupDeletionTest extends TestCase
             'content' => 'Document partagé',
             'attachment_path' => $messageAttachment,
         ]);
+        $additionalAttachmentPath = 'group-messages/photo.jpg';
+        $message->attachments()->create([
+            'path' => $additionalAttachmentPath,
+            'name' => 'photo.jpg',
+            'mime' => 'image/jpeg',
+            'size' => 100,
+        ]);
+        Storage::put($additionalAttachmentPath, 'additional attachment');
         $notification = InternalNotification::create([
             'user_id' => $recipient->id,
             'actor_id' => $creator->id,
@@ -62,8 +70,10 @@ class GroupDeletionTest extends TestCase
         $this->assertDatabaseMissing('discussion_groups', ['id' => $group->id]);
         $this->assertDatabaseMissing('messages', ['id' => $message->id]);
         $this->assertDatabaseMissing('internal_notifications', ['id' => $notification->id]);
+        $this->assertDatabaseMissing('message_attachments', ['message_id' => $message->id]);
         Storage::assertMissing($groupImage);
         Storage::assertMissing($messageAttachment);
+        Storage::assertMissing($additionalAttachmentPath);
     }
 
     public function test_group_member_cannot_delete_group_or_see_delete_button(): void

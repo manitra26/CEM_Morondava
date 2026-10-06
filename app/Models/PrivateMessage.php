@@ -66,4 +66,9 @@ class PrivateMessage extends Model
     {
         return $this->hasMany(PrivateMessageReaction::class);
     }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MessageAttachment::class);
+    }
 }

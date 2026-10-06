@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -49,9 +50,19 @@ class Message extends Model
         return $this->hasMany(MessageReaction::class);
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MessageAttachment::class);
+    }
+
     public function reads(): HasMany
     {
         return $this->hasMany(MessageRead::class);
+    }
+
+    public function hiddenForUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'group_message_hidden')->withTimestamps();
     }
 
     public function isSeenByOthers(): bool

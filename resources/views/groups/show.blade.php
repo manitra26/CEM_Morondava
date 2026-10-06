@@ -242,6 +242,11 @@
         object-fit: cover;
         border-radius: .55rem;
     }
+    #group-attachment-thumbnail {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+    }
     .group-attachment {
         display: inline-flex;
         align-items: center;
@@ -282,6 +287,10 @@
         border-radius: .7rem;
         object-fit: cover;
     }
+    .group-delete-menu { position: relative; }
+    .group-delete-menu summary { cursor: pointer; list-style: none; }
+    .group-delete-menu summary::-webkit-details-marker { display: none; }
+    .group-delete-picker { position: absolute; z-index: 10; right: 0; bottom: 1.8rem; display: grid; gap: .35rem; min-width: 12rem; padding: .5rem; border-radius: .5rem; background: white; box-shadow: 0 8px 22px rgba(23,52,59,.2); }
     .group-chat-read-only { order: 2; flex: 0 0 auto; margin: 0; border-top: 1px solid rgba(23,52,59,.1); border-radius: 0; }
     @media (max-width: 991.98px) {
         .group-chat-card {
@@ -398,7 +407,7 @@
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                             </svg>
-                            <input id="group-attachment-input" type="file" name="attachment" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt">
+                            <input id="group-attachment-input" type="file" name="attachments[]" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt" multiple>
                         </label>
                         <textarea id="chat-content" name="content" rows="1" class="form-control chat-textarea" placeholder="Écrivez un message...">{{ old('content') }}</textarea>
                         <button id="chat-submit" type="submit" class="whatsapp-send-btn" title="Envoyer le message" aria-label="Envoyer">
@@ -407,7 +416,7 @@
                             </svg>
                         </button>
                     </div>
-                    <div class="small cem-soft mt-2">Photos, PDF, Word, Excel, PowerPoint, ZIP ou fichiers texte, 20 Mo maximum.</div>
+                    <!-- <div class="small cem-soft mt-2">Jusqu’à 5 photos ou fichiers par message. Pas de limite de taille dans l’application ; le serveur peut en imposer une.</div> -->
                 </form>
 
                 @else
@@ -431,22 +440,15 @@
                                     <div class="small cem-soft">{{ $message->created_at->format('d/m/Y H:i') }}</div>
                                 </div>
                             </div>
-                            @if(auth()->id() === $message->user_id || auth()->user()->role === 'directeur')
-                                <form method="POST" action="{{ route('messages.destroy', $message) }}" onsubmit="return confirm('Supprimer ce message ?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
-                                </form>
-                            @endif
                         </div>
                         @if($message->replyTo)
-                            <div class="cem-reply-quote mt-3"><strong>{{ $message->replyTo->user->name }}</strong><br>{{ \Illuminate\Support\Str::limit($message->replyTo->content ?: $message->replyTo->attachment_name, 120) }}</div>
+                            <div class="cem-reply-quote mt-3"><strong>{{ $message->replyTo->user->name }}</strong><br>{{ \Illuminate\Support\Str::limit($message->replyTo->content ?: ($message->replyTo->attachment_name ?: $message->replyTo->attachments->first()?->name), 120) }}</div>
                         @endif
                         @if($message->content)
                             <p class="mt-3 mb-2">{{ $message->content }}</p>
                         @endif
+                        @php($isMine = auth()->id() === $message->user_id)
                         @if($message->attachment_path)
-                            @php($isMine = auth()->id() === $message->user_id)
                             @if(str_starts_with((string) $message->attachment_mime, 'image/'))
                                 <a href="{{ route('messages.file', $message) }}" class="group-image-trigger mt-2" target="_blank" rel="noopener" title="Voir l'image {{ $message->attachment_name }}">
                                     <img src="{{ route('messages.file', $message) }}" alt="{{ $message->attachment_name }}">
@@ -460,6 +462,20 @@
                                 </a>
                             @endif
                         @endif
+                        @foreach($message->attachments as $attachment)
+                            @if(str_starts_with($attachment->mime, 'image/'))
+                                <a href="{{ route('messages.attachments.file', [$message, $attachment]) }}" class="group-image-trigger mt-2" target="_blank" rel="noopener" title="Voir l'image {{ $attachment->name }}">
+                                    <img src="{{ route('messages.attachments.file', [$message, $attachment]) }}" alt="{{ $attachment->name }}">
+                                </a>
+                                <a href="{{ route('messages.attachments.download', [$message, $attachment]) }}" class="group-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}" download>
+                                    <span>Télécharger {{ $attachment->name }}</span>
+                                </a>
+                            @else
+                                <a href="{{ route('messages.attachments.download', [$message, $attachment]) }}" class="group-attachment mt-2 text-decoration-none {{ $isMine ? 'text-white' : '' }}" download>
+                                    <span>📎 Fichier : </span><span class="text-truncate">{{ $attachment->name }}</span>
+                                </a>
+                            @endif
+                        @endforeach
                         @if(auth()->id() === $message->user_id)
                             @php($isSeenByOthers = $message->isSeenByOthers())
                             <div class="group-message-status {{ $isSeenByOthers ? 'seen' : 'sent' }}" aria-label="{{ $isSeenByOthers ? 'Message vu' : 'Message non vu' }}" title="{{ $isSeenByOthers ? 'Message vu' : 'Message non vu' }}">
@@ -477,8 +493,27 @@
                                 @endforeach
                             </div>
                             @if($canPost)
-                            <button type="button" class="btn btn-outline-secondary btn-sm reply-message" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->user->name }}" data-reply-content="{{ $message->content ?: $message->attachment_name }}">Répondre</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm reply-message" data-reply-id="{{ $message->id }}" data-reply-user="{{ $message->user->name }}" data-reply-content="{{ $message->content ?: ($message->attachment_name ?: $message->attachments->first()?->name) }}">Répondre</button>
                             @endif
+                            <details class="group-delete-menu">
+                                <summary title="Supprimer le message" aria-label="Supprimer le message">&#128465;</summary>
+                                <div class="group-delete-picker">
+                                    <form method="POST" action="{{ route('messages.destroy', $message) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="scope" value="me">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">Supprimer pour moi</button>
+                                    </form>
+                                    @if($isMine || auth()->user()->role === 'directeur')
+                                        <form method="POST" action="{{ route('messages.destroy', $message) }}" onsubmit="return confirm('Supprimer ce message pour tout le monde ?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input type="hidden" name="scope" value="everyone">
+                                            <button type="submit" class="btn btn-sm btn-danger w-100">Supprimer pour tout le monde</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </details>
                             @foreach($message->reactions->groupBy('reaction') as $reaction => $items)
                                 <button type="button" class="badge reaction-summary reaction-details-trigger {{ $items->contains('user_id', auth()->id()) ? 'reaction-selected' : '' }}" data-reaction-target="reaction-details-{{ $message->id }}-{{ md5($reaction) }}">{{ $reaction }} {{ $items->count() }}</button>
                                 <div id="reaction-details-{{ $message->id }}-{{ md5($reaction) }}" class="reaction-details-popover d-none">
@@ -816,29 +851,48 @@
         ? `${Math.max(1, Math.round(bytes / 1024))} Ko`
         : `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 
-    input.addEventListener('change', () => {
-        const file = input.files[0];
-        if (!file) return;
-        name.textContent = file.name;
-        size.textContent = formatSize(file.size);
+    const clearThumbnails = () => {
         thumbnail.replaceChildren();
-        if (file.type.startsWith('image/')) {
-            const image = document.createElement('img');
-            image.src = URL.createObjectURL(file);
-            image.alt = 'Aperçu de ' + file.name;
-            thumbnail.append(image);
-        } else {
-            const badge = document.createElement('span');
-            badge.className = 'badge cem-badge p-3';
-            badge.textContent = 'Fichier';
-            thumbnail.append(badge);
+    };
+
+    input.addEventListener('change', () => {
+        clearThumbnails();
+        const files = Array.from(input.files || []);
+        if (files.length > 5) {
+            input.value = '';
+            preview.classList.remove('d-none');
+            name.textContent = '';
+            size.textContent = 'Vous pouvez joindre au maximum 5 fichiers.';
+            return;
         }
+        if (!files.length) {
+            preview.classList.add('d-none');
+            return;
+        }
+        name.textContent = files.map((file) => file.name).join(', ');
+        size.textContent = `${files.length} fichier(s) · ${formatSize(files.reduce((total, file) => total + file.size, 0))}`;
+        files.forEach((file) => {
+            if (file.type.startsWith('image/')) {
+                const image = document.createElement('img');
+                const imageUrl = URL.createObjectURL(file);
+                image.onload = () => URL.revokeObjectURL(imageUrl);
+                image.onerror = () => URL.revokeObjectURL(imageUrl);
+                image.src = imageUrl;
+                image.alt = 'Aperçu de ' + file.name;
+                thumbnail.append(image);
+            } else {
+                const badge = document.createElement('span');
+                badge.className = 'badge cem-badge p-2';
+                badge.textContent = file.name;
+                thumbnail.append(badge);
+            }
+        });
         preview.classList.remove('d-none');
     });
 
     remove.addEventListener('click', () => {
         input.value = '';
-        thumbnail.replaceChildren();
+        clearThumbnails();
         preview.classList.add('d-none');
     });
 })();
@@ -862,7 +916,11 @@
     const scrollToLatestMessage = (behavior = 'auto') => {
         messageList.scrollTo({ top: messageList.scrollHeight, behavior });
     };
-    const render = (messages) => messages.forEach((message) => {
+    const render = (messages, hiddenMessageIds = []) => {
+        hiddenMessageIds.forEach((messageId) => {
+            messageList.querySelector('[data-message-id="' + messageId + '"]')?.remove();
+        });
+        messages.forEach((message) => {
         if (chat.querySelector('[data-message-id=\"' + message.id + '\"]')) return;
         const item = document.createElement('div');
         item.className = 'chat-message ' + (Number(message.user.id) === Number(chat.dataset.currentUserId) ? 'mine' : 'theirs');
@@ -910,40 +968,51 @@
             item.append(body);
         }
 
+        const messageAttachments = [...(message.attachments || [])];
         if (message.attachment_url) {
+            messageAttachments.push({
+                name: message.attachment_name,
+                mime: message.attachment_mime,
+                url: message.attachment_url,
+                download_url: message.download_url
+            });
+        }
+        if (messageAttachments.length) {
             const isMine = Number(message.user.id) === Number(chat.dataset.currentUserId);
-            if (message.attachment_mime && message.attachment_mime.startsWith('image/')) {
-                const imgLink = document.createElement('a');
-                imgLink.href = message.attachment_url;
-                imgLink.className = 'group-image-trigger mt-2';
-                imgLink.target = '_blank';
-                imgLink.rel = 'noopener';
-                imgLink.title = "Voir l'image " + (message.attachment_name || '');
-                const img = document.createElement('img');
-                img.src = message.attachment_url;
-                img.alt = message.attachment_name || 'Image';
-                imgLink.append(img);
-                item.append(imgLink);
+            messageAttachments.forEach((attachment) => {
+                if (attachment.mime && attachment.mime.startsWith('image/')) {
+                    const imgLink = document.createElement('a');
+                    imgLink.href = attachment.url;
+                    imgLink.className = 'group-image-trigger mt-2';
+                    imgLink.target = '_blank';
+                    imgLink.rel = 'noopener';
+                    imgLink.title = "Voir l'image " + (attachment.name || '');
+                    const img = document.createElement('img');
+                    img.src = attachment.url;
+                    img.alt = attachment.name || 'Image';
+                    imgLink.append(img);
+                    item.append(imgLink);
 
-                const dlLink = document.createElement('a');
-                dlLink.href = message.download_url;
-                dlLink.className = 'group-attachment mt-2 text-decoration-none ' + (isMine ? 'text-white' : '');
-                dlLink.download = '';
-                dlLink.textContent = "Télécharger l'image";
-                item.append(dlLink);
-            } else {
-                const fileLink = document.createElement('a');
-                fileLink.href = message.download_url;
-                fileLink.className = 'group-attachment mt-2 text-decoration-none ' + (isMine ? 'text-white' : '');
-                fileLink.download = '';
-                const prefix = document.createElement('span');
-                prefix.textContent = '📎 Fichier : ';
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'text-truncate';
-                nameSpan.textContent = message.attachment_name || 'Fichier';
-                fileLink.append(prefix, nameSpan);
-                item.append(fileLink);
-            }
+                    const dlLink = document.createElement('a');
+                    dlLink.href = attachment.download_url;
+                    dlLink.className = 'group-attachment mt-2 text-decoration-none ' + (isMine ? 'text-white' : '');
+                    dlLink.download = '';
+                    dlLink.textContent = "Télécharger " + (attachment.name || "l'image");
+                    item.append(dlLink);
+                } else {
+                    const fileLink = document.createElement('a');
+                    fileLink.href = attachment.download_url;
+                    fileLink.className = 'group-attachment mt-2 text-decoration-none ' + (isMine ? 'text-white' : '');
+                    fileLink.download = '';
+                    const prefix = document.createElement('span');
+                    prefix.textContent = '📎 Fichier : ';
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'text-truncate';
+                    nameSpan.textContent = attachment.name || 'Fichier';
+                    fileLink.append(prefix, nameSpan);
+                    item.append(fileLink);
+                }
+            });
         }
 
         if (Number(message.user.id) === Number(chat.dataset.currentUserId)) {
@@ -995,6 +1064,49 @@
         if (canPost) {
             actions.append(replyButton);
         }
+        const deleteMenu = document.createElement('details');
+        deleteMenu.className = 'group-delete-menu';
+        const deleteTrigger = document.createElement('summary');
+        deleteTrigger.title = 'Supprimer le message';
+        deleteTrigger.setAttribute('aria-label', 'Supprimer le message');
+        deleteTrigger.textContent = '🗑';
+        const deletePicker = document.createElement('div');
+        deletePicker.className = 'group-delete-picker';
+        const createDeleteForm = (scope, label, danger = false) => {
+            const deleteForm = document.createElement('form');
+            deleteForm.method = 'POST';
+            deleteForm.action = message.delete_url;
+            if (scope === 'everyone') {
+                deleteForm.addEventListener('submit', (event) => {
+                    if (!confirm('Supprimer ce message pour tout le monde ?')) event.preventDefault();
+                });
+            }
+            const token = document.createElement('input');
+            token.type = 'hidden';
+            token.name = '_token';
+            token.value = document.querySelector('meta[name=csrf-token]').content;
+            const method = document.createElement('input');
+            method.type = 'hidden';
+            method.name = '_method';
+            method.value = 'DELETE';
+            const scopeInput = document.createElement('input');
+            scopeInput.type = 'hidden';
+            scopeInput.name = 'scope';
+            scopeInput.value = scope;
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'submit';
+            deleteButton.className = 'btn btn-sm w-100 ' + (danger ? 'btn-danger' : 'btn-outline-danger');
+            deleteButton.textContent = label;
+            deleteForm.append(token, method, scopeInput, deleteButton);
+
+            return deleteForm;
+        };
+        deletePicker.append(createDeleteForm('me', 'Supprimer pour moi'));
+        if (message.can_delete_everyone) {
+            deletePicker.append(createDeleteForm('everyone', 'Supprimer pour tout le monde', true));
+        }
+        deleteMenu.append(deleteTrigger, deletePicker);
+        actions.append(deleteMenu);
         Object.entries(message.reactions || {}).forEach(([reaction, reactionData]) => {
             const summary = document.createElement('button');
             summary.type = 'button';
@@ -1033,12 +1145,14 @@
 
         item.append(actions);
         messageList.append(item);
-    });
+        });
+    };
     const refresh = async () => {
         try {
             const response = await fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
             if (!response.ok) throw new Error('offline');
-            render((await response.json()).messages);
+            const data = await response.json();
+            render(data.messages, data.hidden_message_ids || []);
             status.textContent = 'Synchronisé';
             status.className = 'small text-success';
         } catch (error) {
